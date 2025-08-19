@@ -1,0 +1,176 @@
+{
+  "name": "tutor-copiloto-vscode",
+  "displayName": "Tutor Copiloto",
+  "description": "Extensão VS Code para o Tutor Copiloto - Aprendizado interativo com IA",
+  "version": "1.0.0",
+  "publisher": "tutor-copiloto",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Education",
+    "AI",
+    "Other"
+  ],
+  "keywords": [
+    "tutor",
+    "copilot",
+    "learning",
+    "ai",
+    "education",
+    "code-review",
+    "testing"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "tutorCopiloto.explainCode",
+        "title": "Explicar Código",
+        "category": "Tutor Copiloto"
+      },
+      {
+        "command": "tutorCopiloto.writeTests",
+        "title": "Gerar Testes",
+        "category": "Tutor Copiloto"
+      },
+      {
+        "command": "tutorCopiloto.fixCode",
+        "title": "Corrigir e Refatorar",
+        "category": "Tutor Copiloto"
+      },
+      {
+        "command": "tutorCopiloto.assessCode",
+        "title": "Avaliar Código",
+        "category": "Tutor Copiloto"
+      },
+      {
+        "command": "tutorCopiloto.openChat",
+        "title": "Abrir Chat",
+        "category": "Tutor Copiloto"
+      },
+      {
+        "command": "tutorCopiloto.runScenario",
+        "title": "Executar Cenário",
+        "category": "Tutor Copiloto"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "tutorCopiloto.explainCode",
+          "when": "editorHasSelection",
+          "group": "tutorCopiloto@1"
+        },
+        {
+          "command": "tutorCopiloto.writeTests",
+          "when": "editorHasSelection",
+          "group": "tutorCopiloto@2"
+        },
+        {
+          "command": "tutorCopiloto.fixCode",
+          "when": "editorHasSelection",
+          "group": "tutorCopiloto@3"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "tutorCopiloto.assessCode",
+          "when": "resourceExtname =~ /\\.(ts|js|py|java|cs)$/",
+          "group": "tutorCopiloto@1"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "tutorCopiloto.explainCode",
+        "key": "ctrl+shift+e",
+        "mac": "cmd+shift+e",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "tutorCopiloto.openChat",
+        "key": "ctrl+shift+t",
+        "mac": "cmd+shift+t"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "tutorCopilotoChat",
+          "name": "Tutor Copiloto",
+          "when": "tutorCopiloto.enabled"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "tutorCopiloto",
+          "title": "Tutor Copiloto",
+          "icon": "$(mortar-board)"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Tutor Copiloto",
+      "properties": {
+        "tutorCopiloto.apiUrl": {
+          "type": "string",
+          "default": "http://localhost:8080",
+          "description": "URL do servidor orquestrador"
+        },
+        "tutorCopiloto.userLevel": {
+          "type": "string",
+          "enum": ["beginner", "intermediate", "advanced"],
+          "default": "intermediate",
+          "description": "Nível de experiência do usuário"
+        },
+        "tutorCopiloto.persona": {
+          "type": "string",
+          "enum": ["tutor", "reviewer", "mentor"],
+          "default": "tutor",
+          "description": "Persona do assistente"
+        },
+        "tutorCopiloto.costMode": {
+          "type": "string",
+          "enum": ["low-cost", "deep-analysis"],
+          "default": "deep-analysis",
+          "description": "Modo de custo/análise"
+        },
+        "tutorCopiloto.autoConnect": {
+          "type": "boolean",
+          "default": true,
+          "description": "Conectar automaticamente ao iniciar"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.5.0",
+    "@vscode/test-electron": "^2.3.8",
+    "@vscode/vsce": "^2.24.0"
+  },
+  "dependencies": {
+    "ws": "^8.16.0",
+    "axios": "^1.6.0",
+    "@tutor-copiloto/schemas": "*"
+  }
+}

@@ -1,0 +1,46 @@
+version: 3
+
+agent:
+  authtoken: 31WO8NxzIISHnnYtZ4jgDEV8b1k_6m8F5ssvkhr2By6hfA5sy
+
+endpoints:
+  - name: tutor-copiloto-aspnet
+    description: "Tutor Copiloto ASP.NET Core Backend"
+    metadata: "asp-net-core-backend"
+    url: https://tutor-copiloto.ngrok.app
+    upstream:
+      url: 5000
+      protocol: http1
+
+  - name: tutor-copiloto-api
+    description: "Tutor Copiloto API Endpoints"
+    metadata: "api-only"
+    url: https://tutor-api.ngrok.app
+    upstream:
+      url: 5000
+      protocol: http1
+    traffic_policy:
+      on_http_request:
+        - name: "api-only"
+          expressions:
+            - "req.url.path startsWith '/api/'"
+          actions:
+            - type: "allow"
+        - name: "swagger-docs"
+          expressions:
+            - "req.url.path startsWith '/swagger'"
+          actions:
+            - type: "allow"
+        - name: "health-check"
+          expressions:
+            - "req.url.path == '/health'"
+          actions:
+            - type: "allow"
+        - name: "block-pages"
+          actions:
+            - type: "custom-response"
+              config:
+                status_code: 404
+                body: "API Only - Use /api/ endpoints"
+                headers:
+                  content-type: "text/plain"

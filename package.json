@@ -1,0 +1,37 @@
+{
+  "name": "tutor-copiloto",
+  "version": "1.0.0",
+  "description": "Um Tutor Copiloto multimodal e extensível para desenvolvimento e aprendizado",
+  "private": true,
+  "workspaces": [
+    "clients/*",
+    "backend/*",
+    "shared/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "typecheck": "turbo run typecheck",
+    "setup": "./scripts/dev-setup.sh",
+    "setup:k8s": "./scripts/setup-secrets.sh",
+    "docker:build": "docker build -t tutor-copiloto/orchestrator:latest -f backend/orchestrator/Dockerfile . && docker build -t tutor-copiloto/web-spa:latest -f clients/web-spa/Dockerfile .",
+    "k8s:deploy": "kubectl apply -f infra/deployments/kubernetes/",
+    "k8s:status": "kubectl get pods,services,ingress -n tutor-copiloto"
+  },
+  "devDependencies": {
+    "turbo": "^1.13.4",
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.0",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "prettier": "^3.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

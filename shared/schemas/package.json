@@ -1,0 +1,19 @@
+{
+  "name": "@tutor-copiloto/schemas",
+  "version": "1.0.0",
+  "description": "Esquemas compartilhados para tipos e contratos",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

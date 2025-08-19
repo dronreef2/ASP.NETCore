@@ -1,0 +1,440 @@
+@page
+@model TutorCopiloto.Pages.IndexModel
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<TutorCopiloto.Pages.IndexModel> Localizer
+@{
+    ViewData["Title"] = Localizer["TituloHome"];
+}
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="hero-section bg-primary text-white py-5 mb-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold">@Localizer["TituloPlataforma"]</h1>
+                    <p class="lead">@Localizer["DescricaoPlataforma"]</p>
+                    <div class="d-flex gap-3 mt-4">
+                        <a href="#chat-section" class="btn btn-light btn-lg">
+                            <i class="fas fa-comments me-2"></i>@Localizer["IniciarChat"]
+                        </a>
+                        <a href="/swagger" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-code me-2"></i>@Localizer["ExplorarAPI"]
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-graduation-cap fa-5x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">@Localizer["RecursosPlataforma"]</h2>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-primary mb-3">
+                        <i class="fas fa-robot fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">@Localizer["IAAvancada"]</h5>
+                    <p class="card-text">@Localizer["DescricaoIA"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-success mb-3">
+                        <i class="fas fa-tools fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">@Localizer["FerramentasRobustas"]</h5>
+                    <p class="card-text">@Localizer["DescricaoFerramentas"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-info mb-3">
+                        <i class="fas fa-chart-line fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">@Localizer["AnaliseProgresso"]</h5>
+                    <p class="card-text">@Localizer["DescricaoAnalise"]</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Interface Section -->
+    <div id="chat-section" class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>@Localizer["ChatInterativo"]
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Connection Status -->
+                    <div id="connection-status" class="alert alert-info">
+                        <i class="fas fa-circle text-danger me-2"></i>
+                        <span id="status-text">@Localizer["Desconectado"]</span>
+                    </div>
+
+                    <!-- Chat Messages Container -->
+                    <div id="chat-container" class="border rounded p-3 mb-3" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;">
+                        <div id="messages"></div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="input-group">
+                        <input type="text" id="message-input" class="form-control" 
+                               placeholder="@Localizer["DigiteSuaMensagem"]"
+                               maxlength="4000">
+                        <button id="send-button" class="btn btn-primary" type="button" disabled>
+                            <i class="fas fa-paper-plane me-2"></i>@Localizer["Enviar"]
+                        </button>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="mt-3">
+                        <h6>@Localizer["AcoesRapidas"]:</h6>
+                        <div class="btn-group-sm" role="group">
+                            <button class="btn btn-outline-secondary me-2" onclick="sendQuickMessage('@Localizer["ExplicarCodigo"]')">
+                                @Localizer["ExplicarCodigo"]
+                            </button>
+                            <button class="btn btn-outline-secondary me-2" onclick="sendQuickMessage('@Localizer["GerarTestes"]')">
+                                @Localizer["GerarTestes"]
+                            </button>
+                            <button class="btn btn-outline-secondary me-2" onclick="sendQuickMessage('@Localizer["RevisarCodigo"]')">
+                                @Localizer["RevisarCodigo"]
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="sendQuickMessage('@Localizer["AjudaGeral"]')">
+                                @Localizer["AjudaGeral"]
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="text-center mb-4">@Localizer["EstatisticasPlataforma"]</h3>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-primary text-white text-center">
+                <div class="card-body">
+                    <h2 id="total-users">@Model.TotalUsuarios</h2>
+                    <p class="mb-0">@Localizer["UsuariosAtivos"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-success text-white text-center">
+                <div class="card-body">
+                    <h2 id="total-sessions">@Model.TotalSessoes</h2>
+                    <p class="mb-0">@Localizer["SessoesHoje"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-info text-white text-center">
+                <div class="card-body">
+                    <h2 id="total-interactions">@Model.TotalInteracoes</h2>
+                    <p class="mb-0">@Localizer["InteracoesIA"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-warning text-white text-center">
+                <div class="card-body">
+                    <h2 id="avg-response-time">@Model.TempoMedioResposta</h2>
+                    <p class="mb-0">@Localizer["TempoMedioResposta"]</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Language Selector -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <div class="btn-group" role="group" aria-label="Language selection">
+                <a asp-page="/Index" asp-route-culture="pt-BR" class="btn btn-outline-secondary @(Model.CurrentCulture == "pt-BR" ? "active" : "")">
+                    🇧🇷 Português
+                </a>
+                <a asp-page="/Index" asp-route-culture="en" class="btn btn-outline-secondary @(Model.CurrentCulture == "en" ? "active" : "")">
+                    🇺🇸 English
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script>
+        // SignalR Connection
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chathub")
+            .withAutomaticReconnect()
+            .build();
+
+        // Connection status elements
+        const statusElement = document.getElementById('status-text');
+        const statusIndicator = document.querySelector('#connection-status i');
+        const sendButton = document.getElementById('send-button');
+        const messageInput = document.getElementById('message-input');
+        const messagesContainer = document.getElementById('messages');
+
+        // Start connection
+        connection.start().then(function () {
+            updateConnectionStatus(true);
+            console.log('SignalR Connected');
+        }).catch(function (err) {
+            updateConnectionStatus(false);
+            console.error('SignalR Connection Error: ', err.toString());
+        });
+
+        // Connection events
+        connection.onreconnecting(() => {
+            updateConnectionStatus(false, '@Localizer["Reconectando"]...');
+        });
+
+        connection.onreconnected(() => {
+            updateConnectionStatus(true);
+            addSystemMessage('@Localizer["ReconectadoComSucesso"]');
+        });
+
+        connection.onclose(() => {
+            updateConnectionStatus(false);
+            addSystemMessage('@Localizer["ConexaoPerdida"]');
+        });
+
+        // Receive messages
+        connection.on("ReceiveMessage", function (message) {
+            addMessage(message);
+        });
+
+        connection.on("TutorTyping", function (data) {
+            addTypingIndicator();
+        });
+
+        connection.on("Error", function (error) {
+            addErrorMessage(error);
+        });
+
+        // Send message function
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message && connection.state === signalR.HubConnectionState.Connected) {
+                const chatMessage = {
+                    content: message,
+                    type: 'TutorInteraction',
+                    sessionId: generateSessionId()
+                };
+
+                connection.invoke("SendMessage", chatMessage).catch(function (err) {
+                    console.error('Send Message Error: ', err.toString());
+                    addErrorMessage('@Localizer["ErroEnviarMensagem"]');
+                });
+
+                addMessage({
+                    content: message,
+                    senderName: '@Localizer["Voce"]',
+                    timestamp: new Date(),
+                    type: 'UserMessage'
+                });
+
+                messageInput.value = '';
+            }
+        }
+
+        // Quick message function
+        function sendQuickMessage(message) {
+            messageInput.value = message;
+            sendMessage();
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Helper functions
+        function updateConnectionStatus(connected, customMessage = null) {
+            if (connected) {
+                statusElement.textContent = customMessage || '@Localizer["Conectado"]';
+                statusIndicator.className = 'fas fa-circle text-success me-2';
+                sendButton.disabled = false;
+                messageInput.disabled = false;
+            } else {
+                statusElement.textContent = customMessage || '@Localizer["Desconectado"]';
+                statusIndicator.className = 'fas fa-circle text-danger me-2';
+                sendButton.disabled = true;
+                messageInput.disabled = true;
+            }
+        }
+
+        function addMessage(message) {
+            removeTypingIndicator();
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message mb-2 ${message.type === 'UserMessage' ? 'text-end' : ''}`;
+            
+            const timestamp = new Date(message.timestamp).toLocaleTimeString();
+            const senderClass = message.type === 'UserMessage' ? 'user-message' : 'tutor-message';
+            
+            messageDiv.innerHTML = `
+                <div class="message-bubble ${senderClass} d-inline-block p-2 rounded">
+                    <div class="message-content">${escapeHtml(message.content)}</div>
+                    <small class="message-time text-muted d-block mt-1">
+                        ${message.senderName} - ${timestamp}
+                    </small>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addSystemMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'system-message text-center my-2';
+            messageDiv.innerHTML = `<small class="text-muted"><em>${escapeHtml(message)}</em></small>`;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addErrorMessage(error) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'error-message alert alert-danger alert-sm';
+            messageDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${escapeHtml(error)}`;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            removeTypingIndicator();
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typing-indicator';
+            typingDiv.className = 'typing-indicator my-2';
+            typingDiv.innerHTML = `
+                <div class="message-bubble tutor-message d-inline-block p-2 rounded">
+                    <div class="typing-animation">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <small class="text-muted">@Localizer["TutorDigitando"]...</small>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function generateSessionId() {
+            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Auto-refresh statistics
+        setInterval(function() {
+            // Em produção, fazer chamadas AJAX para atualizar estatísticas
+            // fetch('/api/statistics').then(...)
+        }, 30000);
+    </script>
+
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+
+        .feature-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .feature-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .message-bubble.user-message {
+            background-color: #007bff;
+            color: white;
+            max-width: 70%;
+        }
+
+        .message-bubble.tutor-message {
+            background-color: #e9ecef;
+            color: #333;
+            max-width: 70%;
+        }
+
+        .typing-animation {
+            display: inline-flex;
+            gap: 3px;
+        }
+
+        .typing-animation span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #007bff;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-animation span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-animation span:nth-child(2) { animation-delay: -0.16s; }
+
+        @@keyframes typing {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .btn-group .btn.active {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+    </style>
+}

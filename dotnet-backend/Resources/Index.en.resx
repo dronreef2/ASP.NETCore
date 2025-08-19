@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- Titles and Headers -->
+  <data name="TituloHome" xml:space="preserve">
+    <value>Tutor Copilot - AI Assistant for Education</value>
+  </data>
+  <data name="TituloPlataforma" xml:space="preserve">
+    <value>🎓 Tutor Copilot</value>
+  </data>
+  <data name="DescricaoPlataforma" xml:space="preserve">
+    <value>Your intelligent assistant for programming education with advanced AI, real-time code analysis, and personalized pedagogical feedback.</value>
+  </data>
+
+  <!-- Resources and Features -->
+  <data name="RecursosPlataforma" xml:space="preserve">
+    <value>Platform Features</value>
+  </data>
+  <data name="IAAvancada" xml:space="preserve">
+    <value>Advanced AI</value>
+  </data>
+  <data name="DescricaoIA" xml:space="preserve">
+    <value>Claude integration for complex reasoning, code analysis, and personalized educational content generation.</value>
+  </data>
+  <data name="FerramentasRobustas" xml:space="preserve">
+    <value>Robust Tools</value>
+  </data>
+  <data name="DescricaoFerramentas" xml:space="preserve">
+    <value>Test execution, static analysis, linting, and automatic refactoring with real-time feedback.</value>
+  </data>
+  <data name="AnaliseProgresso" xml:space="preserve">
+    <value>Progress Analysis</value>
+  </data>
+  <data name="DescricaoAnalise" xml:space="preserve">
+    <value>Detailed evolution reports, difficulty identification, and personalized improvement suggestions.</value>
+  </data>
+
+  <!-- Chat Interface -->
+  <data name="ChatInterativo" xml:space="preserve">
+    <value>Interactive AI Chat</value>
+  </data>
+  <data name="IniciarChat" xml:space="preserve">
+    <value>Start Chat</value>
+  </data>
+  <data name="ExplorarAPI" xml:space="preserve">
+    <value>Explore API</value>
+  </data>
+  <data name="DigiteSuaMensagem" xml:space="preserve">
+    <value>Type your message or paste your code here...</value>
+  </data>
+  <data name="Enviar" xml:space="preserve">
+    <value>Send</value>
+  </data>
+  <data name="Conectado" xml:space="preserve">
+    <value>Connected to server</value>
+  </data>
+  <data name="Desconectado" xml:space="preserve">
+    <value>Disconnected from server</value>
+  </data>
+  <data name="Reconectando" xml:space="preserve">
+    <value>Reconnecting</value>
+  </data>
+  <data name="ReconectadoComSucesso" xml:space="preserve">
+    <value>Successfully reconnected!</value>
+  </data>
+  <data name="ConexaoPerdida" xml:space="preserve">
+    <value>Connection lost to server</value>
+  </data>
+  <data name="TutorDigitando" xml:space="preserve">
+    <value>Tutor is typing</value>
+  </data>
+  <data name="Voce" xml:space="preserve">
+    <value>You</value>
+  </data>
+
+  <!-- Quick Actions -->
+  <data name="AcoesRapidas" xml:space="preserve">
+    <value>Quick Actions</value>
+  </data>
+  <data name="ExplicarCodigo" xml:space="preserve">
+    <value>Explain code</value>
+  </data>
+  <data name="GerarTestes" xml:space="preserve">
+    <value>Generate tests</value>
+  </data>
+  <data name="RevisarCodigo" xml:space="preserve">
+    <value>Review code</value>
+  </data>
+  <data name="AjudaGeral" xml:space="preserve">
+    <value>General help</value>
+  </data>
+
+  <!-- Statistics -->
+  <data name="EstatisticasPlataforma" xml:space="preserve">
+    <value>Platform Statistics</value>
+  </data>
+  <data name="UsuariosAtivos" xml:space="preserve">
+    <value>Active Users</value>
+  </data>
+  <data name="SessoesHoje" xml:space="preserve">
+    <value>Sessions Today</value>
+  </data>
+  <data name="InteracoesIA" xml:space="preserve">
+    <value>AI Interactions</value>
+  </data>
+  <data name="TempoMedioResposta" xml:space="preserve">
+    <value>Average Time</value>
+  </data>
+
+  <!-- Error Messages -->
+  <data name="ErroEnviarMensagem" xml:space="preserve">
+    <value>Error sending message. Please try again.</value>
+  </data>
+  <data name="ErroCarregarEstatisticas" xml:space="preserve">
+    <value>Error loading statistics</value>
+  </data>
+  <data name="CulturaInvalida" xml:space="preserve">
+    <value>Specified culture is invalid</value>
+  </data>
+  <data name="CulturaAlterada" xml:space="preserve">
+    <value>Language changed to {0} successfully</value>
+  </data>
+  <data name="ErroAlterarCultura" xml:space="preserve">
+    <value>Error changing language</value>
+  </data>
+
+  <!-- API Controller Messages -->
+  <data name="UserIdObrigatorio" xml:space="preserve">
+    <value>User ID is required</value>
+  </data>
+  <data name="TurmaIdObrigatorio" xml:space="preserve">
+    <value>Class ID is required</value>
+  </data>
+  <data name="MesInvalido" xml:space="preserve">
+    <value>Month must be between 1 and 12</value>
+  </data>
+  <data name="DatasObrigatorias" xml:space="preserve">
+    <value>Start and end dates are required</value>
+  </data>
+  <data name="DataInicioMenorQueFim" xml:space="preserve">
+    <value>Start date must be before end date</value>
+  </data>
+  <data name="PeriodoMuitoLongo" xml:space="preserve">
+    <value>Period cannot be longer than 365 days</value>
+  </data>
+  <data name="RelatorioIdObrigatorio" xml:space="preserve">
+    <value>Report ID is required</value>
+  </data>
+  <data name="RelatorioNaoEncontrado" xml:space="preserve">
+    <value>Report not found</value>
+  </data>
+  <data name="FormatoNaoSuportado" xml:space="preserve">
+    <value>Format {0} is not supported</value>
+  </data>
+  <data name="ErroInternoServidor" xml:space="preserve">
+    <value>Internal server error</value>
+  </data>
+
+  <!-- Report Service Messages -->
+  <data name="NenhumaFerramentaUsada" xml:space="preserve">
+    <value>No tools used</value>
+  </data>
+  <data name="RecomendacaoTemasComDificuldade" xml:space="preserve">
+    <value>Review concepts in: {0}</value>
+  </data>
+  <data name="RecomendacaoUsarTestes" xml:space="preserve">
+    <value>Consider using the test generator to practice TDD</value>
+  </data>
+  <data name="RecomendacaoRevisarConceitos" xml:space="preserve">
+    <value>Review fundamental concepts to improve evolution</value>
+  </data>
+  <data name="SugestaoEngajamento" xml:space="preserve">
+    <value>Consider strategies to increase class engagement</value>
+  </data>
+  <data name="SugestaoTempoSessao" xml:space="preserve">
+    <value>Very short sessions - encourage more practice time</value>
+  </data>
+  <data name="SugestaoApoioAdicional" xml:space="preserve">
+    <value>Many students struggling - consider additional support</value>
+  </data>
+
+  <!-- ChatHub Messages -->
+  <data name="UsuarioConectado" xml:space="preserve">
+    <value>User {0} connected</value>
+  </data>
+  <data name="UsuarioDesconectado" xml:space="preserve">
+    <value>User {0} disconnected</value>
+  </data>
+  <data name="UsuarioNaoAutenticado" xml:space="preserve">
+    <value>User not authenticated</value>
+  </data>
+  <data name="MensagemVazia" xml:space="preserve">
+    <value>Message cannot be empty</value>
+  </data>
+  <data name="MensagemMuitoLonga" xml:space="preserve">
+    <value>Message too long (maximum 4000 characters)</value>
+  </data>
+  <data name="ErroProcessarMensagem" xml:space="preserve">
+    <value>Error processing message</value>
+  </data>
+  <data name="NomeGrupoObrigatorio" xml:space="preserve">
+    <value>Group name is required</value>
+  </data>
+  <data name="UsuarioIngressouGrupo" xml:space="preserve">
+    <value>User {0} joined group {1}</value>
+  </data>
+  <data name="IngressoGrupoSucesso" xml:space="preserve">
+    <value>Successfully joined group {0}</value>
+  </data>
+  <data name="ErroIngressarGrupo" xml:space="preserve">
+    <value>Error joining group</value>
+  </data>
+  <data name="UsuarioSaiuGrupo" xml:space="preserve">
+    <value>User {0} left group {1}</value>
+  </data>
+  <data name="ConvitePairProgramming" xml:space="preserve">
+    <value>Pair programming invite from {0}</value>
+  </data>
+  <data name="AguardandoAceitePair" xml:space="preserve">
+    <value>Waiting for partner acceptance</value>
+  </data>
+  <data name="ErroIniciarPairProgramming" xml:space="preserve">
+    <value>Error starting pair programming</value>
+  </data>
+  <data name="PairProgrammingAceito" xml:space="preserve">
+    <value>Pair programming accepted!</value>
+  </data>
+  <data name="RespostaTutorPlaceholder" xml:space="preserve">
+    <value>Thank you for the question: "{0}". How can I help you better understand this concept?</value>
+  </data>
+  <data name="TutorIA" xml:space="preserve">
+    <value>AI Tutor</value>
+  </data>
+  <data name="ErroProcessarTutor" xml:space="preserve">
+    <value>Error processing tutor message</value>
+  </data>
+
+  <!-- Report Labels -->
+  <data name="RelatorioProgressoIndividual" xml:space="preserve">
+    <value>Individual Progress Report</value>
+  </data>
+  <data name="RelatorioPerformanceTurma" xml:space="preserve">
+    <value>Class Performance Report</value>
+  </data>
+</root>

@@ -1,0 +1,298 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tutor-copiloto
+  labels:
+    name: tutor-copiloto
+    app.kubernetes.io/name: tutor-copiloto
+    app.kubernetes.io/version: "1.0.0"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestratordata:
+  # Base64 encoded values - substituir pelos valores reais
+  anthropic-api-key: "VE9ET19TRVRVUA=="  # TODO_SETUP
+  llamaindex-api-key: "VE9ET19TRVRVUA=="  # TODO_SETUPnamespace: tutor-copiloto
+  labels:
+    app: orchestrator
+    component: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: orchestrator
+  template:
+    metadata:
+      labels:
+        app: orchestrator
+        component: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: tutor-copiloto-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+      - name: orchestrator
+        image: tutor-copiloto/orchestrator:1.0.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "8080"
+        - name: HOST
+          value: "0.0.0.0"
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: tutor-copiloto-secrets
+              key: anthropic-api-key
+        - name: LLAMAINDEX_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: tutor-copiloto-secrets
+              key: llamaindex-api-key
+        - name: POSTGRES_URL
+          valueFrom:
+            secretKeyRef:
+              name: tutor-copiloto-secrets
+              key: postgres-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: tutor-copiloto-secrets
+              key: redis-url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: tutor-copiloto-secrets
+              key: jwt-secret
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: tutor-copiloto-config
+              key: otel-endpoint
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: tutor-copiloto-config
+              key: log-level
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 30
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: temp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/.cache
+      volumes:
+      - name: temp
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - orchestrator
+              topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orchestrator-service
+  namespace: tutor-copiloto
+  labels:
+    app: orchestrator
+    component: backend
+spec:
+  selector:
+    app: orchestrator
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-spa
+  namespace: tutor-copiloto
+  labels:
+    app: web-spa
+    component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web-spa
+  template:
+    metadata:
+      labels:
+        app: web-spa
+        component: frontend
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+      - name: web-spa
+        image: tutor-copiloto/web-spa:1.0.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        env:
+        - name: REACT_APP_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: tutor-copiloto-config
+              key: api-url
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-spa-service
+  namespace: tutor-copiloto
+  labels:
+    app: web-spa
+    component: frontend
+spec:
+  selector:
+    app: web-spa
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tutor-copiloto-config
+  namespace: tutor-copiloto
+data:
+  otel-endpoint: "http://otel-collector:4317"
+  log-level: "info"
+  api-url: "http://orchestrator-service"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tutor-copiloto-secrets
+  namespace: tutor-copiloto
+type: Opaque
+data:
+  # Base64 encoded values - substituir pelos valores reais
+  anthropic-api-key: "VE9ET19TRVRUVA=="  # TODO_SETUP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tutor-copiloto-sa
+  namespace: tutor-copiloto
+  labels:
+    app.kubernetes.io/name: tutor-copiloto
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: tutor-copiloto-role
+  namespace: tutor-copiloto
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tutor-copiloto-rolebinding
+  namespace: tutor-copiloto
+subjects:
+- kind: ServiceAccount
+  name: tutor-copiloto-sa
+  namespace: tutor-copiloto
+roleRef:
+  kind: Role
+  name: tutor-copiloto-role
+  apiGroup: rbac.authorization.k8s.io
