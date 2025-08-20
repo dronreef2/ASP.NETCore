@@ -4,6 +4,7 @@
 @inject IStringLocalizer<TutorCopiloto.Pages.IndexModel> Localizer
 @{
     ViewData["Title"] = Localizer["TituloHome"];
+    Layout = "_Layout";
 }
 
 <div class="container-fluid">
@@ -20,6 +21,9 @@
                         </a>
                         <a href="/swagger" class="btn btn-outline-light btn-lg">
                             <i class="fas fa-code me-2"></i>@Localizer["ExplorarAPI"]
+                        </a>
+                        <a href="/deployments" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-rocket me-2"></i>Deployments
                         </a>
                     </div>
                 </div>

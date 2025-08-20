@@ -7,6 +7,37 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# === .NET CORE ===
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.deps.json
+*.runtimeconfig.json
+*.user
+*.suo
+*.cache
+project.lock.json
+launchSettings.json
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+
+# === ENTITY FRAMEWORK ===
+*.db
+*.db-shm
+*.db-wal
+Migrations/*.Designer.cs
+Migrations/*.cs
+
+# === VISUAL STUDIO ===
+.vs/
+*.csproj.user
+*.vscode/
+.vscode/launch.json
+.vscode/tasks.json
+
 # === NODE.JS ===
 node_modules/
 dist/

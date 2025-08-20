@@ -10,6 +10,8 @@ using System.Text;
 using TutorCopiloto.Data;
 using TutorCopiloto.Hubs;
 using TutorCopiloto.Services;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace TutorCopiloto
 {
@@ -29,17 +31,14 @@ namespace TutorCopiloto
 
             // ===== CONFIGURAÇÃO DE SERVIÇOS =====
 
-            // 1. Entity Framework + PostgreSQL
+            // 1. Entity Framework + SQLite
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                ?? Environment.GetEnvironmentVariable("POSTGRES_URL")
-                ?? "Host=localhost;Database=tutordb;Username=tutor;Password=copiloto123";
+                ?? Environment.GetEnvironmentVariable("DATABASE_URL")
+                ?? "Data Source=tutorcopiloto.db";
 
             builder.Services.AddDbContext<TutorDbContext>(options =>
             {
-                options.UseNpgsql(connectionString, npgsqlOptions =>
-                {
-                    npgsqlOptions.EnableRetryOnFailure();
-                });
+                options.UseSqlite(connectionString);
                 
                 if (builder.Environment.IsDevelopment())
                 {
@@ -75,8 +74,52 @@ namespace TutorCopiloto
                 builder.Services.AddMemoryCache();
             }
 
-            // 3. Injeção de Dependência - Serviços customizados
+            // 3. Semantic Kernel e AI Services
+            var kernelBuilder = builder.Services.AddKernel();
+            
+            // Configurar Claude se a chave estiver disponível
+            var aiApiKey = builder.Configuration["AI:ApiKey"];
+            if (!string.IsNullOrEmpty(aiApiKey))
+            {
+                // Registrar ClaudeChatCompletionService
+                builder.Services.AddSingleton<ClaudeChatCompletionService>(provider =>
+                {
+                    var httpClient = provider.GetRequiredService<IHttpClientFactory>().CreateClient("Claude");
+                    var logger = provider.GetRequiredService<ILogger<ClaudeChatCompletionService>>();
+                    
+                    return new ClaudeChatCompletionService(
+                        httpClient,
+                        aiApiKey,
+                        builder.Configuration["AI:Model"] ?? "claude-3-5-sonnet-20241022",
+                        int.Parse(builder.Configuration["AI:MaxTokens"] ?? "4096"),
+                        double.Parse(builder.Configuration["AI:Temperature"] ?? "0.7"),
+                        logger);
+                });
+
+                // Registrar como IChatCompletionService para Semantic Kernel
+                builder.Services.AddSingleton<Microsoft.SemanticKernel.ChatCompletion.IChatCompletionService>(
+                    provider => provider.GetRequiredService<ClaudeChatCompletionService>());
+
+                // Registrar ClaudeService
+                builder.Services.AddScoped<IClaudeService, ClaudeService>();
+            }
+            else
+            {
+                // Fallback: usar mock service para demonstração
+                builder.Services.AddSingleton<Microsoft.SemanticKernel.ChatCompletion.IChatCompletionService>(
+                    provider => new MockChatCompletionService());
+            }
+
+            // 4. Injeção de Dependência - Serviços customizados
             builder.Services.AddScoped<IRelatorioService, RelatorioService>();
+            builder.Services.AddScoped<IDeploymentService, DeploymentService>();
+            builder.Services.AddScoped<IIntelligentAnalysisService, IntelligentAnalysisService>();
+            builder.Services.AddScoped<IOnnxInferenceService, OnnxInferenceService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddSingleton<INgrokTunnelService, NgrokTunnelService>();
+            builder.Services.AddHostedService<NgrokTunnelService>(provider => 
+                (NgrokTunnelService)provider.GetRequiredService<INgrokTunnelService>());
+            builder.Services.AddHttpClient();
 
             // 4. SignalR para tempo real
             builder.Services.AddSignalR(options =>
@@ -86,10 +129,62 @@ namespace TutorCopiloto
                 options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
             });
 
-            // 5. Razor Pages
+            // 5. JWT Authentication
+            var jwtSecretKey = builder.Configuration["JWT:SecretKey"] 
+                ?? Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+                ?? "DefaultSecretKeyForDevelopmentOnlyNotForProduction2024!@#$";
+            
+            var jwtIssuer = builder.Configuration["JWT:Issuer"] ?? "TutorCopiloto";
+            var jwtAudience = builder.Configuration["JWT:Audience"] ?? "TutorCopiloto-Users";
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtIssuer,
+                    ValidAudience = jwtAudience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                // Eventos especiais para SignalR
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+
+                        // Se a requisição for para o SignalR hub
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && 
+                            (path.StartsWithSegments("/chathub")))
+                        {
+                            // Ler o token da query string
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+            builder.Services.AddAuthorization();
+
+            // 6. Razor Pages
             builder.Services.AddRazorPages();
 
-            // 6. API Controllers
+            // 7. API Controllers
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
@@ -97,7 +192,7 @@ namespace TutorCopiloto
                     options.JsonSerializerOptions.WriteIndented = builder.Environment.IsDevelopment();
                 });
 
-            // 7. Swagger/OpenAPI
+            // 8. Swagger/OpenAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
@@ -117,15 +212,30 @@ namespace TutorCopiloto
                 // JWT Authentication
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme",
+                    Description = "JWT Authorization header using the Bearer scheme (Example: 'Bearer 12345abcdef')",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey,
                     Scheme = "Bearer"
                 });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
             });
 
-            // 8. Internacionalização (i18n)
+            // 9. Internacionalização (i18n)
             builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
             builder.Services.Configure<RequestLocalizationOptions>(options =>
@@ -148,7 +258,7 @@ namespace TutorCopiloto
                 options.RequestCultureProviders.Add(new AcceptLanguageHeaderRequestCultureProvider());
             });
 
-            // 9. CORS
+            // 10. CORS
             builder.Services.AddCors(options =>
             {
                 options.AddDefaultPolicy(policy =>
@@ -164,7 +274,7 @@ namespace TutorCopiloto
                 });
             });
 
-            // 10. Health Checks
+            // 11. Health Checks
             builder.Services.AddHealthChecks();
 
             // ===== CONFIGURAÇÃO DA APLICAÇÃO =====
@@ -198,7 +308,11 @@ namespace TutorCopiloto
             // 4. CORS
             app.UseCors();
 
-            // 5. Mapping
+            // 5. Authentication & Authorization
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            // 6. Mapping
             app.MapRazorPages();
             app.MapControllers();
             app.MapHub<ChatHub>("/chathub");

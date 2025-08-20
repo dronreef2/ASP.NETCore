@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Tutor Copiloto</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .navbar-brand {
+            font-weight: bold;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            border-radius: 6px;
+        }
+        .alert {
+            border-radius: 8px;
+        }
+        .sidebar {
+            min-height: calc(100vh - 56px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            border-radius: 6px;
+            margin: 2px 0;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        .main-content {
+            margin-left: 0;
+            transition: margin-left 0.3s;
+        }
+        @@media (min-width: 768px) {
+            .main-content {
+                margin-left: 250px;
+            }
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+        .status-success { color: #28a745; }
+        .status-failed { color: #dc3545; }
+        .status-running { color: #ffc107; }
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-rocket me-2"></i>
+                Tutor Copiloto
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/deployments">
+                            <i class="fas fa-cloud-upload-alt me-1"></i> Deployments
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/ai-analysis">
+                            <i class="fas fa-robot me-1"></i> Análise IA
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/swagger" target="_blank">
+                            <i class="fas fa-book me-1"></i> API Docs
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog me-1"></i> Configurações
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/health">
+                                <i class="fas fa-heartbeat me-1"></i> Health Check
+                            </a></li>
+                            <li><a class="dropdown-item" href="/api/info">
+                                <i class="fas fa-info-circle me-1"></i> API Info
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="https://github.com/microsoft/semantic-kernel" target="_blank">
+                                <i class="fab fa-github me-1"></i> Semantic Kernel
+                            </a></li>
+                            <li><a class="dropdown-item" href="https://onnxruntime.ai/" target="_blank">
+                                <i class="fas fa-brain me-1"></i> ONNX Runtime
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar (apenas para páginas específicas) -->
+    @if (ViewData["ShowSidebar"]?.ToString() == "true")
+    {
+        <div class="sidebar position-fixed top-0 start-0 d-none d-md-block" style="top: 56px; width: 250px; z-index: 1000;">
+            <div class="p-3">
+                <h6 class="text-white mb-3">
+                    <i class="fas fa-robot me-2"></i>
+                    Ferramentas IA
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#log-analysis">
+                            <i class="fas fa-search me-2"></i> Análise de Logs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#prediction">
+                            <i class="fas fa-chart-line me-2"></i> Predição ML
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#anomalies">
+                            <i class="fas fa-exclamation-triangle me-2"></i> Anomalias
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#security">
+                            <i class="fas fa-shield-alt me-2"></i> Segurança
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#optimization">
+                            <i class="fas fa-cog me-2"></i> Otimização
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#recommendations">
+                            <i class="fas fa-lightbulb me-2"></i> Recomendações
+                        </a>
+                    </li>
+                </ul>
+                
+                <hr class="text-white">
+                
+                <h6 class="text-white mb-3">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Métricas
+                </h6>
+                <div class="metric-card card mb-2">
+                    <div class="card-body p-2">
+                        <small>Taxa de Sucesso</small>
+                        <div class="h5 mb-0" id="sidebar-success-rate">-</div>
+                    </div>
+                </div>
+                <div class="metric-card card mb-2">
+                    <div class="card-body p-2">
+                        <small>Anomalias Hoje</small>
+                        <div class="h5 mb-0" id="sidebar-anomalies">-</div>
+                    </div>
+                </div>
+                <div class="metric-card card">
+                    <div class="card-body p-2">
+                        <small>Score IA</small>
+                        <div class="h5 mb-0" id="sidebar-ai-score">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Main Content -->
+    <main class="@(ViewData["ShowSidebar"]?.ToString() == "true" ? "main-content" : "")" style="margin-top: 56px;">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light border-top mt-5">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>🤖 Tutor Copiloto</h6>
+                    <p class="text-muted small mb-0">
+                        Plataforma de deployment inteligente com IA/ML
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="d-flex justify-content-md-end gap-3">
+                        <span class="badge bg-primary">
+                            <i class="fas fa-brain me-1"></i> Semantic Kernel
+                        </span>
+                        <span class="badge bg-success">
+                            <i class="fas fa-microchip me-1"></i> ONNX Runtime
+                        </span>
+                        <span class="badge bg-info">
+                            <i class="fab fa-microsoft me-1"></i> ASP.NET Core
+                        </span>
+                    </div>
+                    <p class="text-muted small mt-2 mb-0">
+                        Powered by Microsoft AI Stack
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/@@microsoft/signalr@latest/dist/browser/signalr.min.js"></script>
+    
+    <!-- Global JavaScript -->
+    <script>
+        // SignalR Connection
+        let connection = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSignalR();
+            updateSidebarMetrics();
+            
+            // Auto-refresh metrics every 30 seconds
+            setInterval(updateSidebarMetrics, 30000);
+        });
+
+        async function initializeSignalR() {
+            try {
+                connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/chathub")
+                    .withAutomaticReconnect()
+                    .build();
+
+                connection.on("DeploymentUpdate", function (deploymentId, status, message) {
+                    console.log(`Deployment ${deploymentId}: ${status} - ${message}`);
+                    
+                    // Mostrar notificação
+                    showNotification(`Deployment ${status}`, message, status === 'Success' ? 'success' : 'danger');
+                    
+                    // Atualizar métricas
+                    updateSidebarMetrics();
+                });
+
+                await connection.start();
+                console.log("✅ SignalR conectado");
+            } catch (err) {
+                console.error("❌ Erro ao conectar SignalR:", err);
+            }
+        }
+
+        async function updateSidebarMetrics() {
+            try {
+                // Buscar métricas da API
+                const response = await fetch('/api/ai-analysis/executive-summary?days=1');
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Atualizar sidebar se existe
+                    const successRateEl = document.getElementById('sidebar-success-rate');
+                    const anomaliesEl = document.getElementById('sidebar-anomalies');
+                    const aiScoreEl = document.getElementById('sidebar-ai-score');
+                    
+                    if (successRateEl) {
+                        successRateEl.textContent = (data.successRate * 100).toFixed(0) + '%';
+                    }
+                    if (anomaliesEl) {
+                        anomaliesEl.textContent = Math.floor(Math.random() * 5); // Simulado
+                    }
+                    if (aiScoreEl) {
+                        aiScoreEl.textContent = Math.floor(Math.random() * 30) + 70; // Simulado
+                    }
+                }
+            } catch (error) {
+                console.warn('Erro ao atualizar métricas da sidebar:', error);
+            }
+        }
+
+        function showNotification(title, message, type = 'info') {
+            // Criar notificação toast
+            const toastContainer = document.getElementById('toast-container') || createToastContainer();
+            
+            const toastId = 'toast-' + Date.now();
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type} border-0`;
+            toast.id = toastId;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <strong>${title}</strong><br>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            // Remover após 5 segundos
+            setTimeout(() => {
+                if (document.getElementById(toastId)) {
+                    toastContainer.removeChild(toast);
+                }
+            }, 5000);
+        }
+
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            container.style.zIndex = '9999';
+            document.body.appendChild(container);
+            return container;
+        }
+
+        // Utility functions
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (days > 0) return `${days}d atrás`;
+            if (hours > 0) return `${hours}h atrás`;
+            if (minutes > 0) return `${minutes}m atrás`;
+            return 'Agora';
+        }
+
+        function formatDuration(duration) {
+            if (typeof duration === 'string') {
+                // Parse formato TimeSpan do .NET
+                const parts = duration.split(':');
+                if (parts.length >= 2) {
+                    const hours = parseInt(parts[0]);
+                    const minutes = parseInt(parts[1]);
+                    if (hours > 0) return `${hours}h ${minutes}m`;
+                    return `${minutes}m`;
+                }
+            }
+            return duration;
+        }
+
+        function getStatusIcon(status) {
+            switch (status) {
+                case 0: return '<i class="fas fa-clock text-warning"></i>'; // Running
+                case 1: return '<i class="fas fa-check-circle text-success"></i>'; // Success
+                case 2: return '<i class="fas fa-times-circle text-danger"></i>'; // Failed
+                default: return '<i class="fas fa-question-circle text-muted"></i>';
+            }
+        }
+
+        function getStatusText(status) {
+            switch (status) {
+                case 0: return 'Em execução';
+                case 1: return 'Sucesso';
+                case 2: return 'Falha';
+                default: return 'Desconhecido';
+            }
+        }
+
+        // Smooth scrolling for anchor links
+        document.addEventListener('click', function(e) {
+            if (e.target.matches('a[href^="#"]')) {
+                e.preventDefault();
+                const target = document.querySelector(e.target.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+    </script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

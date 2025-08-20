@@ -1,0 +1,750 @@
+@page "/ai-analysis"
+@model TutorCopiloto.Pages.AiAnalysisModel
+@{
+    ViewData["Title"] = "Análise Inteligente";
+    ViewData["ShowSidebar"] = "true";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">🤖 Análise Inteligente com IA/ML</h1>
+                    <p class="text-muted mb-0">Análise avançada de deployments usando Semantic Kernel e ONNX Runtime</p>
+                </div>
+                <div>
+                    <span class="badge bg-primary">Semantic Kernel</span>
+                    <span class="badge bg-success">ONNX Runtime</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumo Executivo -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">📊 Resumo Executivo</h5>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadExecutiveSummary()">
+                        <i class="fas fa-sync-alt"></i> Atualizar
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="executive-summary">
+                        <div class="text-center py-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Gerando resumo executivo com IA...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Métricas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Predições ML</h6>
+                            <h3 id="predictions-count">-</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Anomalias Detectadas</h6>
+                            <h3 id="anomalies-count">-</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Score de Segurança</h6>
+                            <h3 id="security-score">-</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-shield-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Otimizações</h6>
+                            <h3 id="optimizations-count">-</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-cog fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Análise de Logs com IA -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">🔍 Análise de Logs com IA</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="deploymentSelect" class="form-label">Selecionar Deployment:</label>
+                        <select class="form-select" id="deploymentSelect">
+                            <option value="">Carregando deployments...</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="analyzeDeploymentLogs()">
+                        <i class="fas fa-robot"></i> Analisar com IA
+                    </button>
+                    <div id="log-analysis-result" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Predição de Deployment -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">🎯 Predição de Deployment</h5>
+                </div>
+                <div class="card-body">
+                    <form id="prediction-form">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tamanho do Repositório (MB):</label>
+                                <input type="number" class="form-control" id="repoSize" value="500">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Número de Dependências:</label>
+                                <input type="number" class="form-control" id="dependenciesCount" value="25">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="hasTests" checked>
+                                    <label class="form-check-label" for="hasTests">Tem Testes</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="hasDockerfile" checked>
+                                    <label class="form-check-label" for="hasDockerfile">Tem Dockerfile</label>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success" onclick="predictDeployment()">
+                            <i class="fas fa-magic"></i> Predizer Resultado
+                        </button>
+                    </form>
+                    <div id="prediction-result" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detecção de Anomalias -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">⚠️ Detecção de Anomalias</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="anomalyDays" class="form-label">Período (dias):</label>
+                        <select class="form-select" id="anomalyDays">
+                            <option value="7">Últimos 7 dias</option>
+                            <option value="30" selected>Últimos 30 dias</option>
+                            <option value="90">Últimos 90 dias</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-warning" onclick="detectAnomalies()">
+                        <i class="fas fa-search"></i> Detectar Anomalias
+                    </button>
+                    <div id="anomaly-result" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Análise de Segurança -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">🛡️ Análise de Segurança</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="securityDeploymentSelect" class="form-label">Selecionar Deployment:</label>
+                        <select class="form-select" id="securityDeploymentSelect">
+                            <option value="">Carregando deployments...</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-danger" onclick="analyzeSecurity()">
+                        <i class="fas fa-shield-alt"></i> Analisar Segurança
+                    </button>
+                    <div id="security-result" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Otimização de Recursos -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">⚡ Otimização de Recursos</h5>
+                </div>
+                <div class="card-body">
+                    <form id="optimization-form">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">CPU (%):</label>
+                                <input type="number" class="form-control" id="cpuUsage" value="75" max="100">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">CPU (cores):</label>
+                                <input type="number" class="form-control" id="cpuCores" value="4" step="0.5">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Memória (%):</label>
+                                <input type="number" class="form-control" id="memoryUsage" value="80" max="100">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Memória (GB):</label>
+                                <input type="number" class="form-control" id="memoryGB" value="8" step="0.5">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Disco (%):</label>
+                                <input type="number" class="form-control" id="diskUsage" value="70" max="100">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Disco (GB):</label>
+                                <input type="number" class="form-control" id="diskGB" value="100">
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-info" onclick="optimizeResources()">
+                            <i class="fas fa-cog"></i> Otimizar Recursos
+                        </button>
+                    </form>
+                    <div id="optimization-result" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recomendações -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">💡 Recomendações Inteligentes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="repoUrl" class="form-label">URL do Repositório:</label>
+                        <input type="url" class="form-control" id="repoUrl" placeholder="https://github.com/user/repo">
+                    </div>
+                    <button class="btn btn-primary" onclick="getRecommendations()">
+                        <i class="fas fa-lightbulb"></i> Gerar Recomendações
+                    </button>
+                    <div id="recommendations-result" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Treinamento -->
+    <div class="modal fade" id="trainingModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">🎓 Treinamento de Modelos ML</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Deseja treinar os modelos de Machine Learning com dados históricos?</p>
+                    <div class="mb-3">
+                        <label for="trainingDays" class="form-label">Período para treinamento:</label>
+                        <select class="form-select" id="trainingDays">
+                            <option value="30">Últimos 30 dias</option>
+                            <option value="90" selected>Últimos 90 dias</option>
+                            <option value="180">Últimos 180 dias</option>
+                        </select>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        O treinamento pode levar alguns minutos dependendo da quantidade de dados.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="trainModels()">Iniciar Treinamento</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botão Floating para Treinamento -->
+    <button class="btn btn-primary position-fixed bottom-0 end-0 m-4 rounded-circle" 
+            style="width: 60px; height: 60px; z-index: 1000"
+            data-bs-toggle="modal" data-bs-target="#trainingModal"
+            title="Treinar Modelos ML">
+        <i class="fas fa-graduation-cap fa-lg"></i>
+    </button>
+</div>
+
+@section Scripts {
+<script>
+    // Variáveis globais
+    let deployments = [];
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDeployments();
+        loadExecutiveSummary();
+        updateMetrics();
+    });
+
+    // Carregar lista de deployments
+    async function loadDeployments() {
+        try {
+            const response = await fetch('/api/deployment');
+            deployments = await response.json();
+            
+            const selects = ['deploymentSelect', 'securityDeploymentSelect'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                select.innerHTML = '<option value="">Selecione um deployment</option>';
+                deployments.forEach(d => {
+                    const option = document.createElement('option');
+                    option.value = d.id;
+                    option.textContent = `${d.repositoryUrl} - ${new Date(d.createdAt).toLocaleString()}`;
+                    select.appendChild(option);
+                });
+            });
+        } catch (error) {
+            console.error('Erro ao carregar deployments:', error);
+        }
+    }
+
+    // Carregar resumo executivo
+    async function loadExecutiveSummary() {
+        try {
+            const response = await fetch('/api/ai-analysis/executive-summary?days=7');
+            const summary = await response.json();
+            
+            document.getElementById('executive-summary').innerHTML = `
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4>${summary.totalDeployments}</h4>
+                            <small class="text-muted">Total de Deployments</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-success">${summary.successfulDeployments}</h4>
+                            <small class="text-muted">Sucessos</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-danger">${summary.failedDeployments}</h4>
+                            <small class="text-muted">Falhas</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-info">${(summary.successRate * 100).toFixed(1)}%</h4>
+                            <small class="text-muted">Taxa de Sucesso</small>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="mt-3">
+                    <h6>Insights da IA:</h6>
+                    <p class="text-muted">${summary.aiSummary}</p>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Erro ao carregar resumo executivo:', error);
+            document.getElementById('executive-summary').innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Erro ao carregar resumo executivo. Verifique se a API está funcionando.
+                </div>
+            `;
+        }
+    }
+
+    // Atualizar métricas dos cards
+    async function updateMetrics() {
+        // Simulação de métricas - em produção, viria da API
+        document.getElementById('predictions-count').textContent = Math.floor(Math.random() * 50) + 10;
+        document.getElementById('anomalies-count').textContent = Math.floor(Math.random() * 5);
+        document.getElementById('security-score').textContent = Math.floor(Math.random() * 30) + 70;
+        document.getElementById('optimizations-count').textContent = Math.floor(Math.random() * 10) + 2;
+    }
+
+    // Analisar logs de deployment
+    async function analyzeDeploymentLogs() {
+        const deploymentId = document.getElementById('deploymentSelect').value;
+        if (!deploymentId) {
+            alert('Selecione um deployment para analisar');
+            return;
+        }
+
+        const resultDiv = document.getElementById('log-analysis-result');
+        resultDiv.innerHTML = '<div class="spinner-border text-primary"></div> Analisando com IA...';
+
+        try {
+            const response = await fetch(`/api/ai-analysis/analyze-logs/${deploymentId}`, {
+                method: 'POST'
+            });
+            const analysis = await response.json();
+
+            resultDiv.innerHTML = `
+                <div class="alert alert-${analysis.overallStatus === 1 ? 'success' : 'danger'}">
+                    <h6>Status: ${analysis.overallStatus === 1 ? 'Sucesso' : 'Falha'}</h6>
+                    <p><strong>Criticidade:</strong> ${getCriticalityText(analysis.criticalityLevel)}</p>
+                    <p><strong>Tempo estimado para resolução:</strong> ${formatTimeSpan(analysis.estimatedResolutionTime)}</p>
+                </div>
+                <div class="mt-3">
+                    <h6>Problemas Identificados:</h6>
+                    <ul>${analysis.issues.map(issue => `<li>${issue}</li>`).join('')}</ul>
+                </div>
+                <div class="mt-3">
+                    <h6>Recomendações:</h6>
+                    <ul>${analysis.recommendations.map(rec => `<li>${rec}</li>`).join('')}</ul>
+                </div>
+                <div class="mt-3">
+                    <h6>Insights da IA:</h6>
+                    <p class="text-muted">${analysis.aiInsights}</p>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Erro na análise:', error);
+            resultDiv.innerHTML = `<div class="alert alert-danger">Erro na análise: ${error.message}</div>`;
+        }
+    }
+
+    // Predizer resultado de deployment
+    async function predictDeployment() {
+        const features = {
+            repositorySize: parseFloat(document.getElementById('repoSize').value),
+            dependencies: Array.from({length: parseInt(document.getElementById('dependenciesCount').value)}, (_, i) => `dep${i}`),
+            hasTests: document.getElementById('hasTests').checked,
+            hasDockerfile: document.getElementById('hasDockerfile').checked,
+            previousFailures: Math.floor(Math.random() * 5),
+            lastSuccessfulDeploymentDays: Math.floor(Math.random() * 30)
+        };
+
+        const resultDiv = document.getElementById('prediction-result');
+        resultDiv.innerHTML = '<div class="spinner-border text-success"></div> Gerando predição...';
+
+        try {
+            const response = await fetch('/api/ai-analysis/predict-deployment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(features)
+            });
+            const prediction = await response.json();
+
+            const successPercent = (prediction.successProbability * 100).toFixed(1);
+            const confidence = (prediction.confidence * 100).toFixed(1);
+
+            resultDiv.innerHTML = `
+                <div class="alert alert-${prediction.successProbability > 0.7 ? 'success' : 'warning'}">
+                    <h6>Probabilidade de Sucesso: ${successPercent}%</h6>
+                    <p><strong>Duração Estimada:</strong> ${formatTimeSpan(prediction.estimatedDuration)}</p>
+                    <p><strong>Confiança:</strong> ${confidence}%</p>
+                </div>
+                <div class="mt-3">
+                    <h6>Fatores de Risco:</h6>
+                    <ul>${prediction.riskFactors.map(risk => `<li class="text-warning">${risk}</li>`).join('')}</ul>
+                </div>
+                <div class="mt-3">
+                    <h6>Recomendações:</h6>
+                    <ul>${prediction.recommendations.map(rec => `<li class="text-info">${rec}</li>`).join('')}</ul>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Erro na predição:', error);
+            resultDiv.innerHTML = `<div class="alert alert-danger">Erro na predição: ${error.message}</div>`;
+        }
+    }
+
+    // Detectar anomalias
+    async function detectAnomalies() {
+        const days = document.getElementById('anomalyDays').value;
+        const resultDiv = document.getElementById('anomaly-result');
+        resultDiv.innerHTML = '<div class="spinner-border text-warning"></div> Detectando anomalias...';
+
+        try {
+            const response = await fetch(`/api/ai-analysis/anomalies?days=${days}`);
+            const result = await response.json();
+
+            document.getElementById('anomalies-count').textContent = result.anomalies.length;
+
+            resultDiv.innerHTML = `
+                <div class="alert alert-info">
+                    <h6>Score de Saúde: ${result.overallHealthScore}/100</h6>
+                    <p><strong>Anomalias Encontradas:</strong> ${result.anomalies.length}</p>
+                </div>
+                ${result.anomalies.length > 0 ? `
+                    <div class="mt-3">
+                        <h6>Anomalias Detectadas:</h6>
+                        ${result.anomalies.map(anomaly => `
+                            <div class="alert alert-${getSeverityClass(anomaly.severity)} p-2 mb-2">
+                                <small><strong>${anomaly.metricType}</strong> - ${anomaly.description}</small>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+                <div class="mt-3">
+                    <h6>Tendências:</h6>
+                    <ul>${result.trends.map(trend => `<li>${trend}</li>`).join('')}</ul>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Erro na detecção de anomalias:', error);
+            resultDiv.innerHTML = `<div class="alert alert-danger">Erro na detecção: ${error.message}</div>`;
+        }
+    }
+
+    // Analisar segurança
+    async function analyzeSecurity() {
+        const deploymentId = document.getElementById('securityDeploymentSelect').value;
+        if (!deploymentId) {
+            alert('Selecione um deployment para analisar');
+            return;
+        }
+
+        const resultDiv = document.getElementById('security-result');
+        resultDiv.innerHTML = '<div class="spinner-border text-danger"></div> Analisando segurança...';
+
+        try {
+            const response = await fetch(`/api/ai-analysis/security-analysis/${deploymentId}`, {
+                method: 'POST'
+            });
+            const security = await response.json();
+
+            document.getElementById('security-score').textContent = Math.round(security.overallRiskScore);
+
+            resultDiv.innerHTML = `
+                <div class="alert alert-${security.overallRiskScore < 5 ? 'success' : security.overallRiskScore < 7 ? 'warning' : 'danger'}">
+                    <h6>Score de Risco: ${security.overallRiskScore.toFixed(1)}/10</h6>
+                    <p><strong>Status de Compliance:</strong> ${security.complianceStatus}</p>
+                </div>
+                ${security.threats.length > 0 ? `
+                    <div class="mt-3">
+                        <h6>Ameaças Identificadas:</h6>
+                        ${security.threats.map(threat => `
+                            <div class="alert alert-${getThreatSeverityClass(threat.severity)} p-2 mb-2">
+                                <small><strong>${threat.threatType}</strong> (CVSS: ${threat.cvssScore})</small><br>
+                                <small>${threat.description}</small>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+                <div class="mt-3">
+                    <h6>Plano de Mitigação:</h6>
+                    <ul>${security.mitigationPlan.map(plan => `<li>${plan}</li>`).join('')}</ul>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Erro na análise de segurança:', error);
+            resultDiv.innerHTML = `<div class="alert alert-danger">Erro na análise: ${error.message}</div>`;
+        }
+    }
+
+    // Otimizar recursos
+    async function optimizeResources() {
+        const resourceData = {
+            cpuUsagePercent: parseFloat(document.getElementById('cpuUsage').value),
+            cpuCores: parseFloat(document.getElementById('cpuCores').value),
+            memoryUsagePercent: parseFloat(document.getElementById('memoryUsage').value),
+            memoryGB: parseFloat(document.getElementById('memoryGB').value),
+            diskUsagePercent: parseFloat(document.getElementById('diskUsage').value),
+            diskGB: parseFloat(document.getElementById('diskGB').value),
+            measuredAt: new Date().toISOString()
+        };
+
+        const resultDiv = document.getElementById('optimization-result');
+        resultDiv.innerHTML = '<div class="spinner-border text-info"></div> Otimizando recursos...';
+
+        try {
+            const response = await fetch('/api/ai-analysis/optimize-resources', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(resourceData)
+            });
+            const optimization = await response.json();
+
+            document.getElementById('optimizations-count').textContent = optimization.optimizations.length;
+
+            resultDiv.innerHTML = `
+                <div class="alert alert-info">
+                    <h6>Impacto de Custo: $${optimization.estimatedCostImpact.toFixed(2)}</h6>
+                    <p><strong>Impacto de Performance:</strong> ${optimization.performanceImpact}</p>
+                    <p><strong>Prioridade:</strong> ${optimization.implementationPriority}</p>
+                </div>
+                ${optimization.optimizations.length > 0 ? `
+                    <div class="mt-3">
+                        <h6>Otimizações Recomendadas:</h6>
+                        ${optimization.optimizations.map(opt => `
+                            <div class="card mb-2">
+                                <div class="card-body p-2">
+                                    <h6 class="card-title">${opt.resourceType}</h6>
+                                    <p class="card-text">
+                                        <small>Uso atual: ${opt.currentUsage.toFixed(1)}% → Recomendado: ${opt.recommendedAllocation.toFixed(1)}</small><br>
+                                        <small class="text-muted">${opt.reasoning}</small>
+                                    </p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '<p class="text-success">Recursos já estão bem otimizados!</p>'}
+            `;
+        } catch (error) {
+            console.error('Erro na otimização:', error);
+            resultDiv.innerHTML = `<div class="alert alert-danger">Erro na otimização: ${error.message}</div>`;
+        }
+    }
+
+    // Gerar recomendações
+    async function getRecommendations() {
+        const repositoryUrl = document.getElementById('repoUrl').value;
+        if (!repositoryUrl) {
+            alert('Digite a URL do repositório');
+            return;
+        }
+
+        const resultDiv = document.getElementById('recommendations-result');
+        resultDiv.innerHTML = '<div class="spinner-border text-primary"></div> Gerando recomendações...';
+
+        try {
+            const response = await fetch('/api/ai-analysis/recommendations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ repositoryUrl })
+            });
+            const recommendations = await response.json();
+
+            resultDiv.innerHTML = `
+                <div class="mt-3">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>🚀 Otimizações de Performance:</h6>
+                            <ul>${recommendations.performanceOptimizations.map(opt => `<li>${opt}</li>`).join('')}</ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>🛡️ Melhorias de Segurança:</h6>
+                            <ul>${recommendations.securityImprovements.map(sec => `<li>${sec}</li>`).join('')}</ul>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6>✅ Boas Práticas:</h6>
+                            <ul>${recommendations.bestPractices.map(practice => `<li>${practice}</li>`).join('')}</ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>🔧 Ferramentas Sugeridas:</h6>
+                            <ul>${recommendations.toolSuggestions.map(tool => `<li>${tool}</li>`).join('')}</ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Erro ao gerar recomendações:', error);
+            resultDiv.innerHTML = `<div class="alert alert-danger">Erro ao gerar recomendações: ${error.message}</div>`;
+        }
+    }
+
+    // Treinar modelos
+    async function trainModels() {
+        const days = document.getElementById('trainingDays').value;
+        
+        try {
+            const response = await fetch(`/api/ai-analysis/train-models?days=${days}`, {
+                method: 'POST'
+            });
+            const result = await response.json();
+
+            // Fechar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('trainingModal'));
+            modal.hide();
+
+            // Mostrar resultado
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                <i class="fas fa-graduation-cap"></i>
+                <strong>Treinamento iniciado!</strong> ${result.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.row'));
+        } catch (error) {
+            console.error('Erro no treinamento:', error);
+            alert('Erro ao iniciar treinamento dos modelos');
+        }
+    }
+
+    // Helper functions
+    function getCriticalityText(level) {
+        const levels = ['Baixa', 'Média', 'Alta', 'Crítica'];
+        return levels[level] || 'Desconhecida';
+    }
+
+    function getSeverityClass(severity) {
+        const classes = ['secondary', 'warning', 'danger', 'dark'];
+        return classes[severity] || 'secondary';
+    }
+
+    function getThreatSeverityClass(severity) {
+        const classes = ['secondary', 'warning', 'danger', 'dark'];
+        return classes[severity] || 'secondary';
+    }
+
+    function formatTimeSpan(timespan) {
+        if (typeof timespan === 'string') {
+            // Parse formato TimeSpan do .NET (HH:mm:ss ou dd.HH:mm:ss)
+            const parts = timespan.split(':');
+            if (parts.length >= 2) {
+                const hours = parseInt(parts[0]);
+                const minutes = parseInt(parts[1]);
+                if (hours > 0) {
+                    return `${hours}h ${minutes}m`;
+                }
+                return `${minutes}m`;
+            }
+        }
+        return timespan;
+    }
+</script>
+}

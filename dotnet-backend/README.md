@@ -1,360 +1,222 @@
-# 🎓 Tutor Copiloto - ASP.NET Core Backend
+# 🚀 ASP.NET Core Deployment Server
 
-> Implementação ASP.NET Core da plataforma educacional Tutor Copiloto
+Um mini servidor de deployment similar ao Vercel/Netlify, integrado com ngrok para exposição pública e webhooks do GitHub para deployments automáticos.
 
-[![.NET](https://img.shields.io/badge/.NET-8.0-blue.svg)](https://dotnet.microsoft.com/)
-[![C#](https://img.shields.io/badge/C%23-12.0-green.svg)](https://docs.microsoft.com/en-us/dotnet/csharp/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791.svg)](https://www.postgresql.org/)
-[![SignalR](https://img.shields.io/badge/SignalR-Tempo%20Real-orange.svg)](https://dotnet.microsoft.com/apps/aspnet/signalr)
+## 🌟 Funcionalidades
 
-## 🏗️ Estrutura do Projeto
+- **🔄 Deployments Automáticos**: Integração com webhooks do GitHub
+- **🌐 Túnel Público**: Exposição automática via ngrok
+- **📊 Dashboard Web**: Interface para gerenciar deployments
+- **🔍 Logs em Tempo Real**: Acompanhamento detalhado dos deployments
+- **🚀 Deploy Manual**: Possibilidade de fazer deployments manuais
+- **📡 API REST**: Endpoints para integração externa
 
-```
-dotnet-backend/
-├── Controllers/
-│   └── RelatorioController.cs      → API REST para relatórios
-├── Services/
-│   ├── IRelatorioService.cs        → Interface para DI
-│   └── RelatorioService.cs         → Implementação do serviço
-├── Hubs/
-│   └── ChatHub.cs                  → Hub SignalR para tempo real
-├── Pages/
-│   ├── Index.cshtml                → Razor Page com i18n
-│   └── Index.cshtml.cs             → PageModel com lógica
-├── Models/
-│   └── DomainModels.cs            → Modelos de domínio
-├── Data/
-│   └── TutorDbContext.cs          → Entity Framework Context
-├── Resources/
-│   ├── Index.pt-BR.resx           → Traduções português
-│   └── Index.en.resx              → Traduções inglês
-├── wwwroot/                       → Arquivos estáticos
-├── Program.cs                     → Configuração de DI, SignalR, Swagger
-└── appsettings.json              → Configurações da aplicação
-```
+## 🛠️ Tecnologias Utilizadas
 
-## 🚀 Quick Start
+- **ASP.NET Core 8.0**: Framework principal
+- **SignalR**: Comunicação em tempo real
+- **ngrok**: Túneis públicos para webhooks
+- **Bootstrap 5**: Interface responsiva
+- **Entity Framework**: Persistência de dados
+- **Serilog**: Logging estruturado
 
-### Pré-requisitos
-- .NET 8.0 SDK
-- PostgreSQL 15+
-- Redis (local ou Redis Cloud)
+## 🚀 Início Rápido
 
-### 1. Instalação e Configuração
+### 1. Executar o Script de Inicialização
 
 ```bash
-# Navegar para o diretório ASP.NET Core
-cd dotnet-backend
-
-# Restaurar pacotes NuGet
-dotnet restore
-
-# Configurar variáveis de ambiente
-export POSTGRES_URL="Host=localhost;Database=tutordb;Username=tutor;Password=copiloto123"
-export REDIS_URL="redis://localhost:6379"
-export JWT_SECRET="your-super-secret-jwt-key"
-
-# Ou configurar no appsettings.json / appsettings.Development.json
+./scripts/start-deployment-server.sh
 ```
 
-### 2. Executar a Aplicação
+Este script irá:
+- Verificar/instalar dependências (ngrok, .NET SDK)
+- Compilar o projeto
+- Iniciar a aplicação
+- Configurar o túnel ngrok automaticamente
 
-```bash
-# Desenvolvimento
-dotnet run
+### 2. Acessar a Interface
 
-# Ou com hot reload
-dotnet watch run
+Após inicializar, acesse:
 
-# Produção
-dotnet run --environment Production
-```
+- **Aplicação Principal**: http://localhost:5000
+- **Dashboard de Deployments**: http://localhost:5000/deployments
+- **API Documentation**: http://localhost:5000/swagger
+- **Health Check**: http://localhost:5000/health
 
-### 3. Acessar Interfaces
+## � Configuração de Webhooks GitHub
 
-- **🏠 Interface Web**: http://localhost:5000
-- **📖 Swagger/API**: http://localhost:5000/swagger
-- **🏥 Health Check**: http://localhost:5000/health
-- **📡 SignalR Hub**: ws://localhost:5000/chathub
+### 1. Obter URL do Webhook
 
-## 🔧 Funcionalidades Implementadas
+Acesse `/deployments` ou `/api/ngrok/webhook-url` para obter a URL pública do webhook.
 
-### 📊 API REST (Controllers)
-- **GET** `/api/relatorio/progresso/{userId}` - Relatório individual
-- **GET** `/api/relatorio/turma/{turmaId}` - Relatório da turma  
-- **GET** `/api/relatorio/ferramentas` - Uso de ferramentas
-- **GET** `/api/relatorio/exportar/{id}` - Exportação (PDF/Excel/CSV)
-- **GET** `/api/relatorio/lista` - Listar relatórios
+### 2. Configurar no GitHub
 
-### ⚡ SignalR (Tempo Real)
-- **Chat Interativo** com suporte a grupos
-- **Pair Programming** colaborativo
-- **Notificações** em tempo real
-- **Typing indicators** e status de conexão
-- **Reconnection automática**
+1. Vá para `Settings > Webhooks` do seu repositório
+2. Clique em `Add webhook`
+3. Cole a URL do webhook (ex: `https://abc123.ngrok.app/api/webhook/github`)
+4. Selecione `application/json` como Content type
+5. Selecione eventos: `push`
+6. Salve o webhook
 
-### 🌐 Razor Pages (Interface Web)
-- **Página Principal** com chat integrado
-- **Internacionalização** (pt-BR, en, es)
-- **Estatísticas** atualizadas em tempo real
-- **Interface responsiva** com Bootstrap
-- **Integração SignalR** no frontend
+### 3. Configurar Secret (Opcional)
 
-### 🗄️ Entity Framework + PostgreSQL
-- **Modelos de domínio** completos
-- **Migrações automáticas** em desenvolvimento
-- **Índices otimizados** para performance
-- **Dados iniciais** para demonstração
-- **Relacionamentos** configurados
+Para maior segurança, adicione um secret no GitHub e configure em `appsettings.json`:
 
-### 🔐 Injeção de Dependência
-```csharp
-// Registro no Program.cs
-builder.Services.AddScoped<IRelatorioService, RelatorioService>();
-builder.Services.AddDbContext<TutorDbContext>();
-builder.Services.AddSingleton<IConnectionMultiplexer>();
-
-// Uso no Controller
-public RelatorioController(
-    IRelatorioService relatorioService,
-    IStringLocalizer<RelatorioController> localizer)
+```json
 {
-    _relatorioService = relatorioService;
-    _localizer = localizer;
+  "GitHub": {
+    "WebhookSecret": "seu-secret-aqui"
+  }
 }
-```
-
-### 🌍 Internacionalização (i18n)
-```csharp
-// Configuração no Program.cs
-builder.Services.Configure<RequestLocalizationOptions>(options =>
-{
-    var supportedCultures = new[] { "pt-BR", "en", "es" };
-    options.DefaultRequestCulture = new RequestCulture("pt-BR");
-    options.SupportedCultures = supportedCultures;
-});
-
-// Uso em Razor Pages
-@inject IStringLocalizer<IndexModel> Localizer
-<h1>@Localizer["TituloPlataforma"]</h1>
 ```
 
 ## 🔧 Configuração
 
 ### appsettings.json
+
 ```json
 {
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=tutordb;Username=tutor;Password=copiloto123",
-    "Redis": "redis://localhost:6379"
+  "Ngrok": {
+    "AutoStart": true,
+    "Port": 5000,
+    "ConfigPath": "/workspaces/ASP.NETCore/ngrok.yml",
+    "EndpointName": "tutor-copiloto-aspnet"
   },
-  "JWT": {
-    "Secret": "your-super-secret-jwt-key",
-    "ExpiryInMinutes": 60
+  "GitHub": {
+    "WebhookSecret": "opcional-para-validacao"
   },
-  "CORS": {
-    "Origins": "http://localhost:3000,http://localhost:5173"
+  "Deployment": {
+    "BaseUrl": "https://deploy.tutorcopiloto.com"
   }
 }
 ```
 
-### Variáveis de Ambiente
-```bash
-# Banco de dados
-POSTGRES_URL=postgresql://user:pass@host:port/database
-REDIS_URL=redis://user:pass@host:port
+### ngrok.yml
 
-# Segurança
-JWT_SECRET=your-super-secret-jwt-key-change-this
-CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+```yaml
+version: 3
+agent:
+  authtoken: seu-authtoken-aqui
 
-# IA Integration
-ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
-LLAMAINDEX_API_KEY=llx-your-key-here
+endpoints:
+  - name: tutor-copiloto-aspnet
+    url: https://tutor-copiloto.ngrok.app
+    upstream:
+      url: 5000
+      protocol: http1
 ```
 
-## 🔄 SignalR Hub Methods
+## � API Endpoints
 
-### Cliente → Servidor
-```javascript
-// Enviar mensagem
-connection.invoke("SendMessage", {
-    content: "Olá!",
-    type: "TutorInteraction",
-    sessionId: "session-123"
-});
+### Webhooks
 
-// Ingressar em grupo
-connection.invoke("JoinGroup", "turma-informatica");
+- `POST /api/webhook/github` - Webhook do GitHub
+- `POST /api/webhook/deploy` - Deploy manual
 
-// Iniciar pair programming
-connection.invoke("StartPairProgramming", "partner-user-id");
-```
+### Deployments
 
-### Servidor → Cliente
-```javascript
-// Receber mensagem
-connection.on("ReceiveMessage", (message) => {
-    console.log("Nova mensagem:", message);
-});
+- `GET /api/webhook/deployments` - Lista deployments
+- `GET /api/webhook/deployments/{id}` - Detalhes de um deployment
+- `GET /api/webhook/deployments/{id}/logs` - Logs de um deployment
 
-// Status de conexão
-connection.on("UserConnected", (user) => {
-    console.log("Usuário conectou:", user);
-});
+### Ngrok Management
 
-// Tutor digitando
-connection.on("TutorTyping", () => {
-    showTypingIndicator();
-});
-```
+- `GET /api/ngrok/status` - Status do túnel
+- `POST /api/ngrok/start` - Iniciar túnel
+- `POST /api/ngrok/stop` - Parar túnel
+- `GET /api/ngrok/webhook-url` - URL do webhook
 
-## 📊 Monitoramento
+## � Fluxo de Deployment
 
-### Health Checks
-```bash
-# Verificar saúde da aplicação
-curl http://localhost:5000/health
+1. **Trigger**: Push para branch `main`/`master` ou deploy manual
+2. **Validação**: Verificação de assinatura (se configurada)
+3. **Criação**: Novo deployment é criado com status `Pending`
+4. **Processamento**: 
+   - Clone do repositório
+   - Análise do código
+   - Instalação de dependências
+   - Build da aplicação
+   - Deploy para ambiente
+5. **Finalização**: Status atualizado para `Success` ou `Failed`
 
-# Resposta esperada
-{
-  "status": "Healthy",
-  "checks": {
-    "database": "Healthy",
-    "redis": "Healthy"
-  }
-}
-```
+## 📝 Logs e Monitoramento
 
-### Logs Estruturados (Serilog)
-```csharp
-// Configuração no Program.cs
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .WriteTo.File("logs/tutor-copiloto-.txt", rollingInterval: RollingInterval.Day)
-    .CreateLogger();
+### Logs da Aplicação
 
-// Uso nos serviços
-_logger.LogInformation("Gerando relatório para usuário {UserId}", userId);
-```
+Os logs são salvos em:
+- Console: Para desenvolvimento
+- Arquivo: `logs/tutor-copiloto-{data}.txt`
 
-## 🧪 Desenvolvimento
+### Logs de Deployment
 
-### Executar com Debug
-```bash
-# Visual Studio Code
-F5 (com launch.json configurado)
+Cada deployment possui logs detalhados acessíveis via:
+- Interface web: `/deployments`
+- API: `/api/webhook/deployments/{id}/logs`
 
-# Command line
-dotnet run --configuration Debug
-```
+## � Deploy em Produção
 
-### Hot Reload
-```bash
-# Reinicialização automática
-dotnet watch run
+### Docker
 
-# Ou com HTTPS
-dotnet watch run --urls "https://localhost:5001;http://localhost:5000"
-```
-
-### Migrações Entity Framework
-```bash
-# Criar migração
-dotnet ef migrations add InitialCreate
-
-# Aplicar migrações
-dotnet ef database update
-
-# Reverter migração
-dotnet ef database update PreviousMigration
-```
-
-## 🚢 Deploy
-
-### Docker (Futuro)
 ```dockerfile
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
+COPY publish/ .
 EXPOSE 80
-EXPOSE 443
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
-COPY ["TutorCopiloto.csproj", "."]
-RUN dotnet restore "TutorCopiloto.csproj"
-COPY . .
-RUN dotnet build "TutorCopiloto.csproj" -c Release -o /app/build
-
-FROM build AS publish
-RUN dotnet publish "TutorCopiloto.csproj" -c Release -o /app/publish
-
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "TutorCopiloto.dll"]
 ```
 
-### Kubernetes Integration
-```yaml
-# Configurar secrets
-apiVersion: v1
-kind: Secret
-metadata:
-  name: tutor-copiloto-secrets
-data:
-  postgres-url: <base64-encoded>
-  redis-url: <base64-encoded>
-  jwt-secret: <base64-encoded>
+### Variáveis de Ambiente
+
+```bash
+ASPNETCORE_ENVIRONMENT=Production
+ASPNETCORE_URLS=http://+:80
+POSTGRES_URL=sua-conexao-postgres
+REDIS_URL=sua-conexao-redis
+NGROK_AUTHTOKEN=seu-authtoken
+GITHUB_WEBHOOK_SECRET=seu-secret
 ```
 
-## 🤝 Integração com Node.js Backend
+## 🛡️ Segurança
 
-Este backend ASP.NET Core pode funcionar:
+- **Validação de Webhook**: Secret do GitHub para validar origem
+- **HTTPS**: Túneis ngrok sempre usam HTTPS
+- **Rate Limiting**: Implementado nos endpoints de webhook
+- **Logging**: Todas as operações são logadas
 
-1. **Standalone** - Como alternativa completa ao backend Node.js
-2. **Complementar** - Focado em relatórios e análises
-3. **Híbrido** - Compartilhando banco PostgreSQL e Redis
+## 🔧 Desenvolvimento
 
-### Compartilhamento de Dados
-```csharp
-// Mesmo esquema de banco do Node.js
-public class Sessao
-{
-    public string Id { get; set; }
-    public string UserId { get; set; }
-    public DateTime CriadoEm { get; set; }
-    // Compatible com o schema Node.js
-}
+### Estrutura do Projeto
+
+```
+dotnet-backend/
+├── Controllers/
+│   ├── WebhookController.cs      # Webhooks e deployments
+│   └── NgrokController.cs        # Gerenciamento ngrok
+├── Services/
+│   ├── DeploymentService.cs      # Lógica de deployment
+│   └── NgrokTunnelService.cs     # Gerenciamento de túneis
+├── Pages/
+│   └── Deployments.cshtml        # Interface web
+└── Program.cs                    # Configuração da aplicação
 ```
 
-## 📚 Tecnologias Utilizadas
+### Executar em Desenvolvimento
 
-- **ASP.NET Core 8.0** - Framework web
-- **Entity Framework Core** - ORM
-- **PostgreSQL** - Banco principal com pgvector
-- **Redis** - Cache e sessões
-- **SignalR** - Comunicação tempo real
-- **Swagger/OpenAPI** - Documentação API
-- **Serilog** - Logging estruturado
-- **JWT Bearer** - Autenticação
-- **Bootstrap 5** - Interface responsiva
+```bash
+cd dotnet-backend
+dotnet restore
+dotnet run
+```
 
-## 🔗 Links Úteis
+## 📞 Suporte
 
-- [ASP.NET Core Docs](https://docs.microsoft.com/en-us/aspnet/core/)
-- [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/)
-- [SignalR Tutorial](https://docs.microsoft.com/en-us/aspnet/core/signalr/)
-- [Swagger Integration](https://docs.microsoft.com/en-us/aspnet/core/tutorials/web-api-help-pages-using-swagger)
+Para dúvidas ou problemas:
 
----
+1. Verifique os logs da aplicação
+2. Teste a conectividade do ngrok
+3. Valide a configuração do webhook no GitHub
+4. Consulte a documentação da API em `/swagger`
 
-## 🎯 Próximos Passos
+## 📄 Licença
 
-1. **Integração IA** - Conectar com Anthropic Claude
-2. **Autenticação** - Sistema completo de usuários
-3. **Containerização** - Docker e Kubernetes
-4. **Testes** - Unit tests e integration tests
-5. **Performance** - Caching avançado e otimizações
-
-**Feito com ❤️ usando ASP.NET Core e C#**
+Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.

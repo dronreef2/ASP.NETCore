@@ -1,7 +1,7 @@
 version: 3
 
 agent:
-  authtoken: 31WO8NxzIISHnnYtZ4jgDEV8b1k_6m8F5ssvkhr2By6hfA5sy
+  authtoken: 31WNdz8eiNhObSBHwkHRDiA81tx_5s1i2zed41mThw2VnmASH
 
 endpoints:
   - name: tutor-copiloto-aspnet
