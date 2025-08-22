@@ -17,6 +17,12 @@ public class TutorDbContext : DbContext
     public DbSet<Sessao> Sessoes => Set<Sessao>();
     public DbSet<Interacao> Interacoes => Set<Interacao>();
     public DbSet<AvaliacaoCodigo> AvaliacoesCodigo => Set<AvaliacaoCodigo>();
+    
+    // Learning Path Management
+    public DbSet<LearningPath> LearningPaths => Set<LearningPath>();
+    public DbSet<LearningModule> LearningModules => Set<LearningModule>();
+    public DbSet<StudentProgress> StudentProgresses => Set<StudentProgress>();
+    public DbSet<ModuleCompletion> ModuleCompletions => Set<ModuleCompletion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -87,6 +93,95 @@ public class TutorDbContext : DbContext
             entity.HasIndex(e => e.CriadoEm);
         });
 
+        // Configuração da entidade LearningPath
+        modelBuilder.Entity<LearningPath>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Nome).IsRequired().HasMaxLength(300);
+            entity.Property(e => e.Descricao).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.Categoria).HasConversion<string>();
+            entity.Property(e => e.Dificuldade).HasConversion<string>();
+            entity.Property(e => e.OrdemSequencia).IsRequired();
+            entity.Property(e => e.DuracaoEstimadaHoras).IsRequired();
+            
+            entity.HasIndex(e => e.Categoria);
+            entity.HasIndex(e => e.Dificuldade);
+            entity.HasIndex(e => e.OrdemSequencia);
+            entity.HasIndex(e => e.Ativo);
+        });
+
+        // Configuração da entidade LearningModule
+        modelBuilder.Entity<LearningModule>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.LearningPathId).IsRequired();
+            entity.Property(e => e.Nome).IsRequired().HasMaxLength(300);
+            entity.Property(e => e.Descricao).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.ConteudoMarkdown).IsRequired();
+            entity.Property(e => e.Ordem).IsRequired();
+            entity.Property(e => e.TempoEstimadoMinutos).IsRequired();
+            entity.Property(e => e.RecursosAdicionais).HasMaxLength(2000);
+            
+            entity.HasOne(e => e.LearningPath)
+                  .WithMany(lp => lp.Modulos)
+                  .HasForeignKey(e => e.LearningPathId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            entity.HasIndex(e => e.LearningPathId);
+            entity.HasIndex(e => e.Ordem);
+        });
+
+        // Configuração da entidade StudentProgress
+        modelBuilder.Entity<StudentProgress>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.UserId).IsRequired();
+            entity.Property(e => e.LearningPathId).IsRequired();
+            entity.Property(e => e.Status).HasConversion<string>();
+            entity.Property(e => e.ProgressoPercentual).HasPrecision(5, 2);
+            
+            entity.HasOne(e => e.Usuario)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            entity.HasOne(e => e.LearningPath)
+                  .WithMany(lp => lp.ProgressosEstudantes)
+                  .HasForeignKey(e => e.LearningPathId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.LearningPathId);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => new { e.UserId, e.LearningPathId }).IsUnique();
+        });
+
+        // Configuração da entidade ModuleCompletion
+        modelBuilder.Entity<ModuleCompletion>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.StudentProgressId).IsRequired();
+            entity.Property(e => e.LearningModuleId).IsRequired();
+            entity.Property(e => e.TempoGastoMinutos).IsRequired();
+            entity.Property(e => e.NotaAvaliacao).HasPrecision(5, 2);
+            entity.Property(e => e.FeedbackEstudante).HasMaxLength(1000);
+            
+            entity.HasOne(e => e.StudentProgress)
+                  .WithMany(sp => sp.ModulosCompletados)
+                  .HasForeignKey(e => e.StudentProgressId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            entity.HasOne(e => e.LearningModule)
+                  .WithMany(lm => lm.Completoes)
+                  .HasForeignKey(e => e.LearningModuleId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            entity.HasIndex(e => e.StudentProgressId);
+            entity.HasIndex(e => e.LearningModuleId);
+            entity.HasIndex(e => e.ConcluidoEm);
+            entity.HasIndex(e => new { e.StudentProgressId, e.LearningModuleId }).IsUnique();
+        });
+
         // Configurações adicionais
         ConfigurarIndicesCompostos(modelBuilder);
         ConfigurarDadosIniciais(modelBuilder);
@@ -106,6 +201,23 @@ public class TutorDbContext : DbContext
         modelBuilder.Entity<AvaliacaoCodigo>()
             .HasIndex(e => new { e.UserId, e.Tema, e.CriadoEm })
             .HasDatabaseName("IX_AvaliacoesCodigo_UserId_Tema_CriadoEm");
+
+        // Novos índices para Learning Path Management
+        modelBuilder.Entity<LearningPath>()
+            .HasIndex(e => new { e.Categoria, e.Dificuldade, e.Ativo })
+            .HasDatabaseName("IX_LearningPaths_Categoria_Dificuldade_Ativo");
+
+        modelBuilder.Entity<LearningModule>()
+            .HasIndex(e => new { e.LearningPathId, e.Ordem })
+            .HasDatabaseName("IX_LearningModules_LearningPathId_Ordem");
+
+        modelBuilder.Entity<StudentProgress>()
+            .HasIndex(e => new { e.UserId, e.Status, e.UltimaAtividadeEm })
+            .HasDatabaseName("IX_StudentProgress_UserId_Status_UltimaAtividade");
+
+        modelBuilder.Entity<ModuleCompletion>()
+            .HasIndex(e => new { e.StudentProgressId, e.ConcluidoEm })
+            .HasDatabaseName("IX_ModuleCompletion_StudentProgressId_ConcluidoEm");
     }
 
     private static void ConfigurarDadosIniciais(ModelBuilder modelBuilder)
@@ -158,6 +270,112 @@ public class TutorDbContext : DbContext
         };
 
         modelBuilder.Entity<AvaliacaoCodigo>().HasData(avaliacaoDemo);
+
+        // Dados de exemplo para Learning Paths
+        var learningPathJavascript = new LearningPath
+        {
+            Id = "lp-javascript-basics",
+            Nome = "JavaScript Fundamentals",
+            Descricao = "Aprenda os conceitos fundamentais de JavaScript do zero",
+            Categoria = LearningPathCategory.Frontend,
+            Dificuldade = LearningPathDifficulty.Beginner,
+            OrdemSequencia = 1,
+            DuracaoEstimadaHoras = 20,
+            Ativo = true,
+            CriadoEm = DateTime.UtcNow
+        };
+
+        var learningPathReact = new LearningPath
+        {
+            Id = "lp-react-fundamentals",
+            Nome = "React Fundamentals",
+            Descricao = "Domine os conceitos básicos do React para desenvolvimento frontend",
+            Categoria = LearningPathCategory.Frontend,
+            Dificuldade = LearningPathDifficulty.Intermediate,
+            OrdemSequencia = 2,
+            DuracaoEstimadaHoras = 35,
+            Ativo = true,
+            CriadoEm = DateTime.UtcNow
+        };
+
+        modelBuilder.Entity<LearningPath>().HasData(learningPathJavascript, learningPathReact);
+
+        // Módulos para JavaScript Basics
+        var moduleJSVariables = new LearningModule
+        {
+            Id = "mod-js-variables",
+            LearningPathId = learningPathJavascript.Id,
+            Nome = "Variáveis e Tipos de Dados",
+            Descricao = "Entenda como declarar e usar variáveis em JavaScript",
+            ConteudoMarkdown = "# Variáveis em JavaScript\n\nVariáveis são containers para armazenar dados...",
+            Ordem = 1,
+            ObrigatorioParaProgresso = true,
+            TempoEstimadoMinutos = 45,
+            RecursosAdicionais = "https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Guide/Grammar_and_types",
+            CriadoEm = DateTime.UtcNow
+        };
+
+        var moduleJSFunctions = new LearningModule
+        {
+            Id = "mod-js-functions",
+            LearningPathId = learningPathJavascript.Id,
+            Nome = "Funções",
+            Descricao = "Aprenda a criar e usar funções em JavaScript",
+            ConteudoMarkdown = "# Funções em JavaScript\n\nFunções são blocos de código reutilizáveis...",
+            Ordem = 2,
+            ObrigatorioParaProgresso = true,
+            TempoEstimadoMinutos = 60,
+            RecursosAdicionais = "https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Guide/Functions",
+            CriadoEm = DateTime.UtcNow
+        };
+
+        // Módulos para React Fundamentals
+        var moduleReactIntro = new LearningModule
+        {
+            Id = "mod-react-intro",
+            LearningPathId = learningPathReact.Id,
+            Nome = "Introdução ao React",
+            Descricao = "Conceitos básicos e configuração do ambiente React",
+            ConteudoMarkdown = "# Introdução ao React\n\nReact é uma biblioteca JavaScript para construir interfaces de usuário...",
+            Ordem = 1,
+            ObrigatorioParaProgresso = true,
+            TempoEstimadoMinutos = 90,
+            RecursosAdicionais = "https://react.dev/learn",
+            CriadoEm = DateTime.UtcNow
+        };
+
+        modelBuilder.Entity<LearningModule>().HasData(
+            moduleJSVariables, moduleJSFunctions, moduleReactIntro
+        );
+
+        // Progresso do usuário demo
+        var progressDemo = new StudentProgress
+        {
+            Id = "progress-demo-1",
+            UserId = usuarioDemo.Id,
+            LearningPathId = learningPathJavascript.Id,
+            IniciadoEm = DateTime.UtcNow.AddDays(-5),
+            Status = LearningProgressStatus.InProgress,
+            ProgressoPercentual = 50.0,
+            TempoGastoMinutos = 45,
+            UltimaAtividadeEm = DateTime.UtcNow.AddHours(-2)
+        };
+
+        modelBuilder.Entity<StudentProgress>().HasData(progressDemo);
+
+        // Conclusão de módulo
+        var completionDemo = new ModuleCompletion
+        {
+            Id = "completion-demo-1",
+            StudentProgressId = progressDemo.Id,
+            LearningModuleId = moduleJSVariables.Id,
+            ConcluidoEm = DateTime.UtcNow.AddDays(-3),
+            TempoGastoMinutos = 45,
+            NotaAvaliacao = 8.5,
+            FeedbackEstudante = "Conteúdo muito claro e bem explicado!"
+        };
+
+        modelBuilder.Entity<ModuleCompletion>().HasData(completionDemo);
     }
 
     /// <summary>

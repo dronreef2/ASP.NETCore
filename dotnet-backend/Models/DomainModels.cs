@@ -215,3 +215,124 @@ public class AvaliacaoCodigo
     // Navegação
     public Usuario Usuario { get; set; } = null!;
 }
+
+/// <summary>
+/// Trilha de aprendizado personalizada para estudantes
+/// </summary>
+public class LearningPath
+{
+    public string Id { get; set; } = string.Empty;
+    public string Nome { get; set; } = string.Empty;
+    public string Descricao { get; set; } = string.Empty;
+    public LearningPathCategory Categoria { get; set; }
+    public LearningPathDifficulty Dificuldade { get; set; }
+    public int OrdemSequencia { get; set; }
+    public int DuracaoEstimadaHoras { get; set; }
+    public bool Ativo { get; set; } = true;
+    public DateTime CriadoEm { get; set; }
+    public DateTime? AtualizadoEm { get; set; }
+    
+    // Navegação
+    public List<LearningModule> Modulos { get; set; } = new();
+    public List<StudentProgress> ProgressosEstudantes { get; set; } = new();
+}
+
+/// <summary>
+/// Módulo individual dentro de uma trilha de aprendizado
+/// </summary>
+public class LearningModule
+{
+    public string Id { get; set; } = string.Empty;
+    public string LearningPathId { get; set; } = string.Empty;
+    public string Nome { get; set; } = string.Empty;
+    public string Descricao { get; set; } = string.Empty;
+    public string ConteudoMarkdown { get; set; } = string.Empty;
+    public int Ordem { get; set; }
+    public bool ObrigatorioParaProgresso { get; set; } = true;
+    public int TempoEstimadoMinutos { get; set; }
+    public string? RecursosAdicionais { get; set; } // URLs, links externos
+    public DateTime CriadoEm { get; set; }
+    
+    // Navegação
+    public LearningPath LearningPath { get; set; } = null!;
+    public List<ModuleCompletion> Completoes { get; set; } = new();
+}
+
+/// <summary>
+/// Progresso do estudante em uma trilha de aprendizado
+/// </summary>
+public class StudentProgress
+{
+    public string Id { get; set; } = string.Empty;
+    public string UserId { get; set; } = string.Empty;
+    public string LearningPathId { get; set; } = string.Empty;
+    public DateTime IniciadoEm { get; set; }
+    public DateTime? ConcluidoEm { get; set; }
+    public LearningProgressStatus Status { get; set; } = LearningProgressStatus.NotStarted;
+    public double ProgressoPercentual { get; set; } = 0.0;
+    public int TempoGastoMinutos { get; set; } = 0;
+    public DateTime UltimaAtividadeEm { get; set; }
+    
+    // Navegação
+    public Usuario Usuario { get; set; } = null!;
+    public LearningPath LearningPath { get; set; } = null!;
+    public List<ModuleCompletion> ModulosCompletados { get; set; } = new();
+}
+
+/// <summary>
+/// Conclusão de um módulo por um estudante
+/// </summary>
+public class ModuleCompletion
+{
+    public string Id { get; set; } = string.Empty;
+    public string StudentProgressId { get; set; } = string.Empty;
+    public string LearningModuleId { get; set; } = string.Empty;
+    public DateTime ConcluidoEm { get; set; }
+    public int TempoGastoMinutos { get; set; }
+    public double? NotaAvaliacao { get; set; }
+    public string? FeedbackEstudante { get; set; }
+    
+    // Navegação
+    public StudentProgress StudentProgress { get; set; } = null!;
+    public LearningModule LearningModule { get; set; } = null!;
+}
+
+/// <summary>
+/// Categorias de trilhas de aprendizado
+/// </summary>
+public enum LearningPathCategory
+{
+    Frontend,
+    Backend,
+    FullStack,
+    DevOps,
+    DataScience,
+    MachineLearning,
+    MobileDevelopment,
+    GameDevelopment,
+    Cybersecurity,
+    SoftwareArchitecture
+}
+
+/// <summary>
+/// Níveis de dificuldade das trilhas
+/// </summary>
+public enum LearningPathDifficulty
+{
+    Beginner,
+    Intermediate,
+    Advanced,
+    Expert
+}
+
+/// <summary>
+/// Status do progresso do estudante
+/// </summary>
+public enum LearningProgressStatus
+{
+    NotStarted,
+    InProgress,
+    Completed,
+    Paused,
+    Abandoned
+}

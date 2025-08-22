@@ -116,9 +116,14 @@ namespace TutorCopiloto
             builder.Services.AddScoped<IIntelligentAnalysisService, IntelligentAnalysisService>();
             builder.Services.AddScoped<IOnnxInferenceService, OnnxInferenceService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
-            builder.Services.AddSingleton<INgrokTunnelService, NgrokTunnelService>();
-            builder.Services.AddHostedService<NgrokTunnelService>(provider => 
-                (NgrokTunnelService)provider.GetRequiredService<INgrokTunnelService>());
+            builder.Services.AddScoped<ILearningPathService, LearningPathService>(); // New Learning Path Service
+            builder.Services.AddScoped<ICodeQualityService, CodeQualityService>(); // New Code Quality Service
+            
+            // Comment out NgrokTunnelService for testing - not available in sandbox
+            // builder.Services.AddSingleton<INgrokTunnelService, NgrokTunnelService>();
+            // builder.Services.AddHostedService<NgrokTunnelService>(provider => 
+            //     (NgrokTunnelService)provider.GetRequiredService<INgrokTunnelService>());
+            
             builder.Services.AddHttpClient();
 
             // 4. SignalR para tempo real
