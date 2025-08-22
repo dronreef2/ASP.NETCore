@@ -87,6 +87,10 @@ namespace TutorCopiloto
                     client.DefaultRequestHeaders.Add("x-api-key", aiApiKey);
                 });
 
+                // Também expor o adapter mais simples para desacoplar do Semantic Kernel nos serviços
+                builder.Services.AddScoped<IChatCompletionAdapter>(provider =>
+                    (IChatCompletionAdapter)provider.GetRequiredService<IClaudeChatCompletionService>());
+
                 // Registrar como IChatCompletionService para Semantic Kernel (usando a implementação do typed client)
                 builder.Services.AddSingleton<Microsoft.SemanticKernel.ChatCompletion.IChatCompletionService>(
                     provider => (Microsoft.SemanticKernel.ChatCompletion.IChatCompletionService)provider.GetRequiredService<IClaudeChatCompletionService>());

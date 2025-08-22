@@ -205,6 +205,28 @@ namespace TutorCopiloto.Services
             }
         }
 
+        // --- Adapter-friendly API ---
+        // Implementação simples que envia um prompt e retorna a primeira resposta textual do modelo.
+        public async Task<string?> GetChatResponseAsync(string prompt, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(prompt)) return null;
+
+            var chatHistory = new ChatHistory();
+            chatHistory.AddUserMessage(prompt);
+
+            try
+            {
+                var response = await GetChatMessageContentsAsync(chatHistory, cancellationToken: cancellationToken);
+                var first = response.FirstOrDefault();
+                return first?.Content;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro no adapter GetChatResponseAsync");
+                return null;
+            }
+        }
+
         private List<ClaudeMessage> ConvertChatHistoryToClaudeMessages(ChatHistory chatHistory)
         {
             var messages = new List<ClaudeMessage>();
