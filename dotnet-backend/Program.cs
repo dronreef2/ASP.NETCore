@@ -116,6 +116,7 @@ namespace TutorCopiloto
             builder.Services.AddScoped<IIntelligentAnalysisService, IntelligentAnalysisService>();
             builder.Services.AddScoped<IOnnxInferenceService, OnnxInferenceService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<ILearningPathService, LearningPathService>(); // New Learning Path Service
             builder.Services.AddSingleton<INgrokTunnelService, NgrokTunnelService>();
             builder.Services.AddHostedService<NgrokTunnelService>(provider => 
                 (NgrokTunnelService)provider.GetRequiredService<INgrokTunnelService>());

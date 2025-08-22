@@ -59,7 +59,7 @@ namespace TutorCopiloto.Migrations
                         new
                         {
                             Id = "demo-assessment-1",
-                            CriadoEm = new DateTime(2025, 8, 20, 4, 36, 24, 68, DateTimeKind.Utc).AddTicks(9916),
+                            CriadoEm = new DateTime(2025, 8, 22, 2, 15, 21, 442, DateTimeKind.Utc).AddTicks(9898),
                             Feedback = "Bom entendimento dos conceitos fundamentais. Continue praticando loops e condicionais.",
                             NotaFinal = 8.5,
                             Tema = "JavaScript Básico",
@@ -117,12 +117,240 @@ namespace TutorCopiloto.Migrations
                         new
                         {
                             Id = "demo-interaction-1",
-                            CriadoEm = new DateTime(2025, 8, 20, 4, 36, 24, 68, DateTimeKind.Utc).AddTicks(9878),
+                            CriadoEm = new DateTime(2025, 8, 22, 2, 15, 21, 442, DateTimeKind.Utc).AddTicks(9862),
                             FerramentaUsada = "code-analyzer",
                             SessaoId = "demo-session-1",
                             Sucesso = true,
                             TempoExecucaoMs = 1500,
                             Tipo = "explain"
+                        });
+                });
+
+            modelBuilder.Entity("TutorCopiloto.Models.LearningModule", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ConteudoMarkdown")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LearningPathId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("ObrigatorioParaProgresso")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Ordem")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RecursosAdicionais")
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TempoEstimadoMinutos")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LearningPathId");
+
+                    b.HasIndex("Ordem");
+
+                    b.HasIndex("LearningPathId", "Ordem")
+                        .HasDatabaseName("IX_LearningModules_LearningPathId_Ordem");
+
+                    b.ToTable("LearningModules");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "mod-js-variables",
+                            ConteudoMarkdown = "# Variáveis em JavaScript\n\nVariáveis são containers para armazenar dados...",
+                            CriadoEm = new DateTime(2025, 8, 22, 2, 15, 21, 442, DateTimeKind.Utc).AddTicks(9964),
+                            Descricao = "Entenda como declarar e usar variáveis em JavaScript",
+                            LearningPathId = "lp-javascript-basics",
+                            Nome = "Variáveis e Tipos de Dados",
+                            ObrigatorioParaProgresso = true,
+                            Ordem = 1,
+                            RecursosAdicionais = "https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Guide/Grammar_and_types",
+                            TempoEstimadoMinutos = 45
+                        },
+                        new
+                        {
+                            Id = "mod-js-functions",
+                            ConteudoMarkdown = "# Funções em JavaScript\n\nFunções são blocos de código reutilizáveis...",
+                            CriadoEm = new DateTime(2025, 8, 22, 2, 15, 21, 442, DateTimeKind.Utc).AddTicks(9966),
+                            Descricao = "Aprenda a criar e usar funções em JavaScript",
+                            LearningPathId = "lp-javascript-basics",
+                            Nome = "Funções",
+                            ObrigatorioParaProgresso = true,
+                            Ordem = 2,
+                            RecursosAdicionais = "https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Guide/Functions",
+                            TempoEstimadoMinutos = 60
+                        },
+                        new
+                        {
+                            Id = "mod-react-intro",
+                            ConteudoMarkdown = "# Introdução ao React\n\nReact é uma biblioteca JavaScript para construir interfaces de usuário...",
+                            CriadoEm = new DateTime(2025, 8, 22, 2, 15, 21, 442, DateTimeKind.Utc).AddTicks(9969),
+                            Descricao = "Conceitos básicos e configuração do ambiente React",
+                            LearningPathId = "lp-react-fundamentals",
+                            Nome = "Introdução ao React",
+                            ObrigatorioParaProgresso = true,
+                            Ordem = 1,
+                            RecursosAdicionais = "https://react.dev/learn",
+                            TempoEstimadoMinutos = 90
+                        });
+                });
+
+            modelBuilder.Entity("TutorCopiloto.Models.LearningPath", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("AtualizadoEm")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Categoria")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Dificuldade")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DuracaoEstimadaHoras")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("OrdemSequencia")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Ativo");
+
+                    b.HasIndex("Categoria");
+
+                    b.HasIndex("Dificuldade");
+
+                    b.HasIndex("OrdemSequencia");
+
+                    b.HasIndex("Categoria", "Dificuldade", "Ativo")
+                        .HasDatabaseName("IX_LearningPaths_Categoria_Dificuldade_Ativo");
+
+                    b.ToTable("LearningPaths");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "lp-javascript-basics",
+                            Ativo = true,
+                            Categoria = "Frontend",
+                            CriadoEm = new DateTime(2025, 8, 22, 2, 15, 21, 442, DateTimeKind.Utc).AddTicks(9927),
+                            Descricao = "Aprenda os conceitos fundamentais de JavaScript do zero",
+                            Dificuldade = "Beginner",
+                            DuracaoEstimadaHoras = 20,
+                            Nome = "JavaScript Fundamentals",
+                            OrdemSequencia = 1
+                        },
+                        new
+                        {
+                            Id = "lp-react-fundamentals",
+                            Ativo = true,
+                            Categoria = "Frontend",
+                            CriadoEm = new DateTime(2025, 8, 22, 2, 15, 21, 442, DateTimeKind.Utc).AddTicks(9930),
+                            Descricao = "Domine os conceitos básicos do React para desenvolvimento frontend",
+                            Dificuldade = "Intermediate",
+                            DuracaoEstimadaHoras = 35,
+                            Nome = "React Fundamentals",
+                            OrdemSequencia = 2
+                        });
+                });
+
+            modelBuilder.Entity("TutorCopiloto.Models.ModuleCompletion", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ConcluidoEm")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FeedbackEstudante")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LearningModuleId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<double?>("NotaAvaliacao")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("StudentProgressId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TempoGastoMinutos")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConcluidoEm");
+
+                    b.HasIndex("LearningModuleId");
+
+                    b.HasIndex("StudentProgressId");
+
+                    b.HasIndex("StudentProgressId", "ConcluidoEm")
+                        .HasDatabaseName("IX_ModuleCompletion_StudentProgressId_ConcluidoEm");
+
+                    b.HasIndex("StudentProgressId", "LearningModuleId")
+                        .IsUnique();
+
+                    b.ToTable("ModuleCompletions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "completion-demo-1",
+                            ConcluidoEm = new DateTime(2025, 8, 19, 2, 15, 21, 443, DateTimeKind.Utc).AddTicks(37),
+                            FeedbackEstudante = "Conteúdo muito claro e bem explicado!",
+                            LearningModuleId = "mod-js-variables",
+                            NotaAvaliacao = 8.5,
+                            StudentProgressId = "progress-demo-1",
+                            TempoGastoMinutos = 45
                         });
                 });
 
@@ -159,9 +387,72 @@ namespace TutorCopiloto.Migrations
                         new
                         {
                             Id = "demo-session-1",
-                            CriadoEm = new DateTime(2025, 8, 20, 4, 36, 24, 68, DateTimeKind.Utc).AddTicks(9813),
+                            CriadoEm = new DateTime(2025, 8, 22, 2, 15, 21, 442, DateTimeKind.Utc).AddTicks(9817),
                             DuracaoMinutos = 30,
-                            FinalizadoEm = new DateTime(2025, 8, 20, 5, 6, 24, 68, DateTimeKind.Utc).AddTicks(9813),
+                            FinalizadoEm = new DateTime(2025, 8, 22, 2, 45, 21, 442, DateTimeKind.Utc).AddTicks(9818),
+                            UserId = "demo-user-1"
+                        });
+                });
+
+            modelBuilder.Entity("TutorCopiloto.Models.StudentProgress", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ConcluidoEm")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("IniciadoEm")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LearningPathId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("ProgressoPercentual")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TempoGastoMinutos")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UltimaAtividadeEm")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LearningPathId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "LearningPathId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "Status", "UltimaAtividadeEm")
+                        .HasDatabaseName("IX_StudentProgress_UserId_Status_UltimaAtividade");
+
+                    b.ToTable("StudentProgresses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "progress-demo-1",
+                            IniciadoEm = new DateTime(2025, 8, 17, 2, 15, 21, 443, DateTimeKind.Utc),
+                            LearningPathId = "lp-javascript-basics",
+                            ProgressoPercentual = 50.0,
+                            Status = "InProgress",
+                            TempoGastoMinutos = 45,
+                            UltimaAtividadeEm = new DateTime(2025, 8, 22, 0, 15, 21, 443, DateTimeKind.Utc).AddTicks(3),
                             UserId = "demo-user-1"
                         });
                 });
@@ -204,11 +495,11 @@ namespace TutorCopiloto.Migrations
                         new
                         {
                             Id = "demo-user-1",
-                            CriadoEm = new DateTime(2025, 8, 20, 4, 36, 24, 68, DateTimeKind.Utc).AddTicks(9473),
+                            CriadoEm = new DateTime(2025, 8, 22, 2, 15, 21, 442, DateTimeKind.Utc).AddTicks(9662),
                             Email = "demo@tutorcopiloto.com",
                             Nome = "Usuário Demo",
                             TurmaId = "turma-demo",
-                            UltimoAcesso = new DateTime(2025, 8, 20, 4, 36, 24, 68, DateTimeKind.Utc).AddTicks(9474)
+                            UltimoAcesso = new DateTime(2025, 8, 22, 2, 15, 21, 442, DateTimeKind.Utc).AddTicks(9664)
                         });
                 });
 
@@ -234,6 +525,36 @@ namespace TutorCopiloto.Migrations
                     b.Navigation("Sessao");
                 });
 
+            modelBuilder.Entity("TutorCopiloto.Models.LearningModule", b =>
+                {
+                    b.HasOne("TutorCopiloto.Models.LearningPath", "LearningPath")
+                        .WithMany("Modulos")
+                        .HasForeignKey("LearningPathId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LearningPath");
+                });
+
+            modelBuilder.Entity("TutorCopiloto.Models.ModuleCompletion", b =>
+                {
+                    b.HasOne("TutorCopiloto.Models.LearningModule", "LearningModule")
+                        .WithMany("Completoes")
+                        .HasForeignKey("LearningModuleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TutorCopiloto.Models.StudentProgress", "StudentProgress")
+                        .WithMany("ModulosCompletados")
+                        .HasForeignKey("StudentProgressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LearningModule");
+
+                    b.Navigation("StudentProgress");
+                });
+
             modelBuilder.Entity("TutorCopiloto.Models.Sessao", b =>
                 {
                     b.HasOne("TutorCopiloto.Models.Usuario", "Usuario")
@@ -245,9 +566,45 @@ namespace TutorCopiloto.Migrations
                     b.Navigation("Usuario");
                 });
 
+            modelBuilder.Entity("TutorCopiloto.Models.StudentProgress", b =>
+                {
+                    b.HasOne("TutorCopiloto.Models.LearningPath", "LearningPath")
+                        .WithMany("ProgressosEstudantes")
+                        .HasForeignKey("LearningPathId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TutorCopiloto.Models.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LearningPath");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("TutorCopiloto.Models.LearningModule", b =>
+                {
+                    b.Navigation("Completoes");
+                });
+
+            modelBuilder.Entity("TutorCopiloto.Models.LearningPath", b =>
+                {
+                    b.Navigation("Modulos");
+
+                    b.Navigation("ProgressosEstudantes");
+                });
+
             modelBuilder.Entity("TutorCopiloto.Models.Sessao", b =>
                 {
                     b.Navigation("Interacoes");
+                });
+
+            modelBuilder.Entity("TutorCopiloto.Models.StudentProgress", b =>
+                {
+                    b.Navigation("ModulosCompletados");
                 });
 
             modelBuilder.Entity("TutorCopiloto.Models.Usuario", b =>
