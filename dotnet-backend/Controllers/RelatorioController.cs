@@ -230,7 +230,7 @@ public class RelatorioController : ControllerBase
     /// <returns>Lista de relatórios</returns>
     [HttpGet("lista")]
     [ProducesResponseType(typeof(IEnumerable<ResumoRelatorio>), 200)]
-    public async Task<ActionResult<IEnumerable<ResumoRelatorio>>> ListarRelatorios(
+    public Task<ActionResult<IEnumerable<ResumoRelatorio>>> ListarRelatorios(
         [FromQuery] string? userId = null)
     {
         try
@@ -263,12 +263,12 @@ public class RelatorioController : ControllerBase
                 relatorios = relatorios.Where(r => r.UserId == userId).ToList();
             }
 
-            return Ok(relatorios);
+            return Task.FromResult<ActionResult<IEnumerable<ResumoRelatorio>>>(Ok(relatorios));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao listar relatórios");
-            return StatusCode(500, _localizer["ErroInternoServidor"]);
+            return Task.FromResult<ActionResult<IEnumerable<ResumoRelatorio>>>(StatusCode(500, _localizer["ErroInternoServidor"]));
         }
     }
 }

@@ -125,7 +125,7 @@ namespace TutorCopiloto.Services
             }
         }
 
-        public async Task<AnomalyDetectionResult> DetectAnomaliesAsync(List<DeploymentMetrics> historicalData)
+    public Task<AnomalyDetectionResult> DetectAnomaliesAsync(List<DeploymentMetrics> historicalData)
         {
             try
             {
@@ -152,7 +152,7 @@ namespace TutorCopiloto.Services
                     }
                 }
 
-                return new AnomalyDetectionResult
+                var result = new AnomalyDetectionResult
                 {
                     Anomalies = anomalies,
                     OverallHealthScore = CalculateHealthScore(anomalies.Count, historicalData.Count),
@@ -160,11 +160,13 @@ namespace TutorCopiloto.Services
                     Recommendations = GenerateAnomalyRecommendations(anomalies),
                     DetectedAt = DateTime.UtcNow
                 };
+
+                return Task.FromResult(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro na detecção de anomalias");
-                return new AnomalyDetectionResult
+                var fallback = new AnomalyDetectionResult
                 {
                     Anomalies = new List<AnomalyPoint>(),
                     OverallHealthScore = 75,
@@ -172,10 +174,12 @@ namespace TutorCopiloto.Services
                     Recommendations = new List<string> { "Colete mais dados históricos" },
                     DetectedAt = DateTime.UtcNow
                 };
+
+                return Task.FromResult(fallback);
             }
         }
 
-        public async Task<ResourceOptimizationResult> OptimizeResourcesAsync(ResourceUsageData currentUsage)
+    public Task<ResourceOptimizationResult> OptimizeResourcesAsync(ResourceUsageData currentUsage)
         {
             try
             {
@@ -225,7 +229,7 @@ namespace TutorCopiloto.Services
                 var estimatedCostImpact = CalculateCostImpact(optimizations);
                 var performanceImpact = CalculatePerformanceImpact(optimizations);
 
-                return new ResourceOptimizationResult
+                var result = new ResourceOptimizationResult
                 {
                     Optimizations = optimizations,
                     EstimatedCostImpact = estimatedCostImpact,
@@ -233,11 +237,13 @@ namespace TutorCopiloto.Services
                     ImplementationPriority = DeterminePriority(optimizations),
                     OptimizedAt = DateTime.UtcNow
                 };
+
+                return Task.FromResult(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro na otimização de recursos");
-                return new ResourceOptimizationResult
+                var fallback = new ResourceOptimizationResult
                 {
                     Optimizations = new List<ResourceOptimization>(),
                     EstimatedCostImpact = 0,
@@ -245,10 +251,12 @@ namespace TutorCopiloto.Services
                     ImplementationPriority = "Baixa",
                     OptimizedAt = DateTime.UtcNow
                 };
+
+                return Task.FromResult(fallback);
             }
         }
 
-        public async Task<SecurityThreatAssessment> AssessSecurityThreatsAsync(SecurityFeatures features)
+    public Task<SecurityThreatAssessment> AssessSecurityThreatsAsync(SecurityFeatures features)
         {
             try
             {
@@ -298,7 +306,7 @@ namespace TutorCopiloto.Services
                 var overallRisk = CalculateOverallRisk(threats);
                 var complianceStatus = AssessCompliance(features);
 
-                return new SecurityThreatAssessment
+                var result = new SecurityThreatAssessment
                 {
                     Threats = threats,
                     OverallRiskScore = overallRisk,
@@ -306,11 +314,13 @@ namespace TutorCopiloto.Services
                     MitigationPlan = GenerateMitigationPlan(threats),
                     AssessedAt = DateTime.UtcNow
                 };
+
+                return Task.FromResult(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro na avaliação de segurança");
-                return new SecurityThreatAssessment
+                var fallback = new SecurityThreatAssessment
                 {
                     Threats = new List<SecurityThreat>(),
                     OverallRiskScore = 50,
@@ -318,10 +328,12 @@ namespace TutorCopiloto.Services
                     MitigationPlan = new List<string> { "Avaliação manual necessária" },
                     AssessedAt = DateTime.UtcNow
                 };
+
+                return Task.FromResult(fallback);
             }
         }
 
-        public async Task TrainModelFromHistoricalDataAsync(List<HistoricalDeployment> data)
+    public async Task TrainModelFromHistoricalDataAsync(List<HistoricalDeployment> data)
         {
             try
             {

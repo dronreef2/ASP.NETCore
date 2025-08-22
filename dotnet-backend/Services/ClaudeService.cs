@@ -65,7 +65,7 @@ namespace TutorCopiloto.Services
         public int OutputTokens { get; set; }
     }
 
-    public class ClaudeChatCompletionService : IClaudeChatCompletionService
+    public class ClaudeChatCompletionService : IClaudeChatCompletionService, IChatCompletionAdapter
     {
     private readonly HttpClient _httpClient;
     private readonly ILogger<ClaudeChatCompletionService> _logger;
@@ -78,7 +78,6 @@ namespace TutorCopiloto.Services
 
         public ClaudeChatCompletionService(
             HttpClient httpClient,
-            string apiKey,
             string modelId = "claude-3-5-sonnet-20241022",
             int maxTokens = 4096,
             double temperature = 0.7,

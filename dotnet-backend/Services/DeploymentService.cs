@@ -29,7 +29,7 @@ namespace TutorCopiloto.Services
             _configuration = configuration;
         }
 
-        public async Task<Deployment> CreateDeploymentAsync(DeploymentRequest request)
+    public Task<Deployment> CreateDeploymentAsync(DeploymentRequest request)
         {
             var deployment = new Deployment
             {
@@ -49,43 +49,39 @@ namespace TutorCopiloto.Services
             _logger.LogInformation("Deployment criado: {DeploymentId} para {Repository}@{Branch}", 
                 deployment.Id, deployment.RepositoryUrl, deployment.Branch);
 
-            // Inicia o processo de deploy em background
+            // Inicia o processo de deploy em background (fire-and-forget)
             _ = Task.Run(() => ProcessDeploymentAsync(deployment));
 
-            return deployment;
+            return Task.FromResult(deployment);
         }
 
-        public async Task<List<Deployment>> GetDeploymentsAsync(int page = 1, int size = 10)
+        public Task<List<Deployment>> GetDeploymentsAsync(int page = 1, int size = 10)
         {
-            await Task.CompletedTask;
-            
-            return _deployments.Values
+            var result = _deployments.Values
                 .OrderByDescending(d => d.CreatedAt)
                 .Skip((page - 1) * size)
                 .Take(size)
                 .ToList();
+
+            return Task.FromResult(result);
         }
 
-        public async Task<Deployment?> GetDeploymentAsync(string id)
+        public Task<Deployment?> GetDeploymentAsync(string id)
         {
-            await Task.CompletedTask;
-            return _deployments.TryGetValue(id, out var deployment) ? deployment : null;
+            var result = _deployments.TryGetValue(id, out var deployment) ? deployment : null;
+            return Task.FromResult(result);
         }
 
-        public async Task<string?> GetDeploymentLogsAsync(string id)
+        public Task<string?> GetDeploymentLogsAsync(string id)
         {
-            await Task.CompletedTask;
-            
             if (!_deploymentLogs.TryGetValue(id, out var logs))
-                return null;
+                return Task.FromResult<string?>(null);
 
-            return string.Join("\n", logs);
+            return Task.FromResult<string?>(string.Join("\n", logs));
         }
 
-        public async Task UpdateDeploymentStatusAsync(string id, DeploymentStatus status, string? message = null)
+        public Task UpdateDeploymentStatusAsync(string id, DeploymentStatus status, string? message = null)
         {
-            await Task.CompletedTask;
-            
             if (_deployments.TryGetValue(id, out var deployment))
             {
                 deployment.Status = status;
@@ -109,6 +105,8 @@ namespace TutorCopiloto.Services
                     AddLog(id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] ❌ Deploy falhou!");
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         private async Task ProcessDeploymentAsync(Deployment deployment)
