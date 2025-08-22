@@ -65,7 +65,7 @@ namespace TutorCopiloto.Services
         public int OutputTokens { get; set; }
     }
 
-    public class ClaudeChatCompletionService : IClaudeChatCompletionService
+    public class ClaudeChatCompletionService : IClaudeChatCompletionService, IChatCompletionAdapter
     {
     private readonly HttpClient _httpClient;
     private readonly ILogger<ClaudeChatCompletionService> _logger;

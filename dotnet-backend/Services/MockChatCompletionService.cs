@@ -7,7 +7,7 @@ namespace TutorCopiloto.Services
     /// <summary>
     /// Mock chat completion service para demonstração quando não há API key configurada
     /// </summary>
-    public class MockChatCompletionService : IChatCompletionService
+    public class MockChatCompletionService : IChatCompletionService, IChatCompletionAdapter
     {
         public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
@@ -136,6 +136,26 @@ Análise realizada com sucesso. Esta é uma resposta simulada do sistema de IA.
 3. Otimizar configurações de produção
 
 *Para funcionalidades completas de IA, configure uma chave de API válida.*";
+        }
+
+        // Implementação de IChatCompletionAdapter
+        public async Task<string?> GetChatResponseAsync(string prompt, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(prompt)) return null;
+
+            var chatHistory = new ChatHistory();
+            chatHistory.AddUserMessage(prompt);
+
+            try
+            {
+                var response = await GetChatMessageContentsAsync(chatHistory, cancellationToken: cancellationToken);
+                var first = response.FirstOrDefault();
+                return first?.Content;
+            }
+            catch (Exception)
+            {
+                return "Erro no serviço mock de IA";
+            }
         }
     }
 }
