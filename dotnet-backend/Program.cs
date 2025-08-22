@@ -76,29 +76,20 @@ namespace TutorCopiloto
 
             // 3. Semantic Kernel e AI Services
             var kernelBuilder = builder.Services.AddKernel();
-            
-            // Configurar Claude se a chave estiver disponível
+            // Configurar Claude como typed HttpClient (IClaudeChatCompletionService)
             var aiApiKey = builder.Configuration["AI:ApiKey"];
             if (!string.IsNullOrEmpty(aiApiKey))
             {
-                // Registrar ClaudeChatCompletionService
-                builder.Services.AddSingleton<ClaudeChatCompletionService>(provider =>
+                builder.Services.AddHttpClient<IClaudeChatCompletionService, ClaudeChatCompletionService>(client =>
                 {
-                    var httpClient = provider.GetRequiredService<IHttpClientFactory>().CreateClient("Claude");
-                    var logger = provider.GetRequiredService<ILogger<ClaudeChatCompletionService>>();
-                    
-                    return new ClaudeChatCompletionService(
-                        httpClient,
-                        aiApiKey,
-                        builder.Configuration["AI:Model"] ?? "claude-3-5-sonnet-20241022",
-                        int.Parse(builder.Configuration["AI:MaxTokens"] ?? "4096"),
-                        double.Parse(builder.Configuration["AI:Temperature"] ?? "0.7"),
-                        logger);
+                    client.BaseAddress = new Uri("https://api.anthropic.com/");
+                    client.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
+                    client.DefaultRequestHeaders.Add("x-api-key", aiApiKey);
                 });
 
-                // Registrar como IChatCompletionService para Semantic Kernel
+                // Registrar como IChatCompletionService para Semantic Kernel (usando a implementação do typed client)
                 builder.Services.AddSingleton<Microsoft.SemanticKernel.ChatCompletion.IChatCompletionService>(
-                    provider => provider.GetRequiredService<ClaudeChatCompletionService>());
+                    provider => (Microsoft.SemanticKernel.ChatCompletion.IChatCompletionService)provider.GetRequiredService<IClaudeChatCompletionService>());
 
                 // Registrar ClaudeService
                 builder.Services.AddScoped<IClaudeService, ClaudeService>();
@@ -136,6 +127,15 @@ namespace TutorCopiloto
             
             var jwtIssuer = builder.Configuration["JWT:Issuer"] ?? "TutorCopiloto";
             var jwtAudience = builder.Configuration["JWT:Audience"] ?? "TutorCopiloto-Users";
+
+            // Harden: exigir JWT secret em ambientes não-dev
+            if (!builder.Environment.IsDevelopment() && 
+                string.IsNullOrEmpty(builder.Configuration["JWT_SECRET_KEY"]) &&
+                string.IsNullOrEmpty(builder.Configuration["JWT:SecretKey"]) &&
+                string.IsNullOrEmpty(Environment.GetEnvironmentVariable("JWT_SECRET_KEY")))
+            {
+                throw new InvalidOperationException("JWT_SECRET_KEY é obrigatório em produção");
+            }
 
             builder.Services.AddAuthentication(options =>
             {

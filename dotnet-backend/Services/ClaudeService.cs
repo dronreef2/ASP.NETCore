@@ -65,14 +65,14 @@ namespace TutorCopiloto.Services
         public int OutputTokens { get; set; }
     }
 
-    public class ClaudeChatCompletionService : IChatCompletionService
+    public class ClaudeChatCompletionService : IClaudeChatCompletionService
     {
-        private readonly HttpClient _httpClient;
-        private readonly ILogger<ClaudeChatCompletionService> _logger;
-        private readonly string _modelId;
-        private readonly int _maxTokens;
-        private readonly double _temperature;
-        private readonly JsonSerializerOptions _jsonOptions;
+    private readonly HttpClient _httpClient;
+    private readonly ILogger<ClaudeChatCompletionService> _logger;
+    private readonly string _modelId;
+    private readonly int _maxTokens;
+    private readonly double _temperature;
+    private readonly JsonSerializerOptions _jsonOptions;
 
         public IReadOnlyDictionary<string, object?> Attributes { get; }
 
@@ -84,21 +84,18 @@ namespace TutorCopiloto.Services
             double temperature = 0.7,
             ILogger<ClaudeChatCompletionService>? logger = null)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _modelId = modelId;
             _maxTokens = maxTokens;
             _temperature = temperature;
 
-            // Configurar headers para API do Claude
-            _httpClient.DefaultRequestHeaders.Clear();
-            _httpClient.DefaultRequestHeaders.Add("x-api-key", apiKey);
-            _httpClient.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
-            _httpClient.BaseAddress = new Uri("https://api.anthropic.com/");
+            // Observação: não mutamos headers/base address do HttpClient recebido.
+            // Espera-se que o client seja registrado como named/typed via AddHttpClient("Claude") em Program.cs.
 
             _jsonOptions = new JsonSerializerOptions
             {
-                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = false
             };
 

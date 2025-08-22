@@ -64,14 +64,35 @@ Responda em formato JSON estruturado.";
                 var response = await _chatCompletion.GetChatMessageContentsAsync(new ChatHistory(prompt));
                 var aiResponse = response.FirstOrDefault();
 
+                // Tentar desserializar a resposta da IA para um DTO estruturado
+                TutorCopiloto.Services.Dto.IntelligentAnalysisResponseDto? dto = null;
+                if (!string.IsNullOrEmpty(aiResponse?.Content))
+                {
+                    try
+                    {
+                        dto = System.Text.Json.JsonSerializer.Deserialize<TutorCopiloto.Services.Dto.IntelligentAnalysisResponseDto>(
+                            aiResponse.Content,
+                            new System.Text.Json.JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true
+                            });
+                    }
+                    catch (System.Text.Json.JsonException jex)
+                    {
+                        _logger.LogWarning(jex, "Resposta da IA não estava em JSON válido: usando heurística fallback");
+                    }
+                }
+
                 var result = new LogAnalysisResult
                 {
                     DeploymentId = deploymentId,
-                    Status = "Analisado",
-                    Issues = ExtractIssues(logs, aiResponse?.Content ?? ""),
-                    Recommendations = ExtractRecommendations(aiResponse?.Content ?? ""),
-                    Severity = DetermineSeverity(logs),
-                    EstimatedResolutionTime = EstimateResolutionTime(logs),
+                    Status = dto?.Status ?? "Analisado",
+                    Issues = dto?.Issues ?? ExtractIssues(logs, aiResponse?.Content ?? ""),
+                    Recommendations = dto?.Recommendations ?? ExtractRecommendations(aiResponse?.Content ?? ""),
+                    Severity = dto?.Severity ?? DetermineSeverity(logs),
+                    EstimatedResolutionTime = dto?.EstimatedResolutionMinutes.HasValue == true
+                        ? TimeSpan.FromMinutes(dto.EstimatedResolutionMinutes.Value)
+                        : EstimateResolutionTime(logs),
                     AiInsights = aiResponse?.Content ?? "Análise não disponível"
                 };
 
