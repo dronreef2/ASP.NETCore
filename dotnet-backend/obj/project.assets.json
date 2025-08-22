@@ -5941,19 +5941,19 @@
     ]
   },
   "packageFolders": {
-    "/home/runner/.nuget/packages/": {}
+    "/home/codespace/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/runner/work/ASP.NETCore/ASP.NETCore/dotnet-backend/TutorCopiloto.csproj",
+      "projectUniqueName": "/workspaces/ASP.NETCore/dotnet-backend/TutorCopiloto.csproj",
       "projectName": "TutorCopiloto",
-      "projectPath": "/home/runner/work/ASP.NETCore/ASP.NETCore/dotnet-backend/TutorCopiloto.csproj",
-      "packagesPath": "/home/runner/.nuget/packages/",
-      "outputPath": "/home/runner/work/ASP.NETCore/ASP.NETCore/dotnet-backend/obj/",
+      "projectPath": "/workspaces/ASP.NETCore/dotnet-backend/TutorCopiloto.csproj",
+      "packagesPath": "/home/codespace/.nuget/packages/",
+      "outputPath": "/workspaces/ASP.NETCore/dotnet-backend/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/runner/.nuget/NuGet/NuGet.Config"
+        "/home/codespace/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -5971,6 +5971,11 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -6081,7 +6086,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.119/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.412/PortableRuntimeIdentifierGraph.json"
       }
     }
   },
