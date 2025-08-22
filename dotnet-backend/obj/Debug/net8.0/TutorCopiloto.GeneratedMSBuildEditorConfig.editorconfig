@@ -9,15 +9,27 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = TutorCopiloto
 build_property.RootNamespace = TutorCopiloto
-build_property.ProjectDir = /workspaces/ASP.NETCore/dotnet-backend/
+build_property.ProjectDir = /home/runner/work/ASP.NETCore/ASP.NETCore/dotnet-backend/
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = /workspaces/ASP.NETCore/dotnet-backend
+build_property.MSBuildProjectDirectory = /home/runner/work/ASP.NETCore/ASP.NETCore/dotnet-backend
 build_property._RazorSourceGeneratorDebug = 
 
-[/workspaces/ASP.NETCore/dotnet-backend/Pages/Index.cshtml]
+[/home/runner/work/ASP.NETCore/ASP.NETCore/dotnet-backend/Pages/AiAnalysis.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQWlBbmFseXNpcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/ASP.NETCore/ASP.NETCore/dotnet-backend/Pages/Deployments.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvRGVwbG95bWVudHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/ASP.NETCore/ASP.NETCore/dotnet-backend/Pages/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/runner/work/ASP.NETCore/ASP.NETCore/dotnet-backend/Pages/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvU2hhcmVkL19MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 

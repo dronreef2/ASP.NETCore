@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/workspaces/ASP.NETCore/dotnet-backend/TutorCopiloto.csproj": {}
+    "/home/runner/work/ASP.NETCore/ASP.NETCore/dotnet-backend/TutorCopiloto.csproj": {}
   },
   "projects": {
-    "/workspaces/ASP.NETCore/dotnet-backend/TutorCopiloto.csproj": {
+    "/home/runner/work/ASP.NETCore/ASP.NETCore/dotnet-backend/TutorCopiloto.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/workspaces/ASP.NETCore/dotnet-backend/TutorCopiloto.csproj",
+        "projectUniqueName": "/home/runner/work/ASP.NETCore/ASP.NETCore/dotnet-backend/TutorCopiloto.csproj",
         "projectName": "TutorCopiloto",
-        "projectPath": "/workspaces/ASP.NETCore/dotnet-backend/TutorCopiloto.csproj",
-        "packagesPath": "/home/codespace/.nuget/packages/",
-        "outputPath": "/workspaces/ASP.NETCore/dotnet-backend/obj/",
+        "projectPath": "/home/runner/work/ASP.NETCore/ASP.NETCore/dotnet-backend/TutorCopiloto.csproj",
+        "packagesPath": "/home/runner/.nuget/packages/",
+        "outputPath": "/home/runner/work/ASP.NETCore/ASP.NETCore/dotnet-backend/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/codespace/.nuget/NuGet/NuGet.Config"
+          "/home/runner/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -32,17 +32,20 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "Anthropic.SDK": {
+              "target": "Package",
+              "version": "[0.1.0, )"
+            },
+            "Microsoft.ApplicationInsights.AspNetCore": {
+              "target": "Package",
+              "version": "[2.22.0, )"
+            },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[8.0.8, )"
@@ -51,13 +54,41 @@
               "target": "Package",
               "version": "[8.0.8, )"
             },
+            "Microsoft.EntityFrameworkCore.Sqlite": {
+              "target": "Package",
+              "version": "[8.0.8, )"
+            },
             "Microsoft.Extensions.Caching.StackExchangeRedis": {
               "target": "Package",
               "version": "[9.0.8, )"
             },
+            "Microsoft.Extensions.Http.Polly": {
+              "target": "Package",
+              "version": "[8.0.8, )"
+            },
             "Microsoft.Extensions.Localization": {
               "target": "Package",
               "version": "[8.0.8, )"
+            },
+            "Microsoft.ML.OnnxRuntime": {
+              "target": "Package",
+              "version": "[1.17.1, )"
+            },
+            "Microsoft.ML.OnnxRuntime.Managed": {
+              "target": "Package",
+              "version": "[1.17.1, )"
+            },
+            "Microsoft.SemanticKernel": {
+              "target": "Package",
+              "version": "[1.6.1, )"
+            },
+            "Microsoft.SemanticKernel.Connectors.OpenAI": {
+              "target": "Package",
+              "version": "[1.6.1, )"
+            },
+            "Microsoft.SemanticKernel.Plugins.Core": {
+              "target": "Package",
+              "version": "[1.6.1-alpha, )"
             },
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
@@ -83,9 +114,13 @@
               "target": "Package",
               "version": "[6.7.3, )"
             },
+            "System.Diagnostics.DiagnosticSource": {
+              "target": "Package",
+              "version": "[9.0.8, )"
+            },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
-              "version": "[8.1.0, )"
+              "version": "[7.1.2, )"
             }
           },
           "imports": [
@@ -107,7 +142,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.412/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.119/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
