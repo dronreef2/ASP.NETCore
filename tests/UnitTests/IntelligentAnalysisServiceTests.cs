@@ -3,37 +3,23 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TutorCopiloto.Services;
 using TutorCopiloto.Services.Dto;
-using Microsoft.SemanticKernel.ChatCompletion;
+// Removido uso direto de tipos do Semantic Kernel para facilitar testes via adapter
 using Xunit;
 
 namespace UnitTests
 {
-    public class FakeChatCompletionService : IChatCompletionService
+    public class FakeChatCompletionAdapter : IChatCompletionAdapter
     {
         private readonly string _responseContent;
 
-        public FakeChatCompletionService(string responseContent)
+        public FakeChatCompletionAdapter(string responseContent)
         {
             _responseContent = responseContent;
-            Attributes = new Dictionary<string, object?>();
         }
 
-        public IReadOnlyDictionary<string, object?> Attributes { get; }
-
-        public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, System.Threading.CancellationToken cancellationToken = default)
+        public Task<string?> GetChatResponseAsync(string prompt, System.Threading.CancellationToken cancellationToken = default)
         {
-            var list = new List<ChatMessageContent>
-            {
-                new ChatMessageContent(AuthorRole.Assistant, _responseContent)
-            };
-
-            return Task.FromResult((IReadOnlyList<ChatMessageContent>)list);
-        }
-
-        public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [System.Runtime.CompilerServices.EnumeratorCancellation] System.Threading.CancellationToken cancellationToken = default)
-        {
-            yield return new StreamingChatMessageContent(AuthorRole.Assistant, _responseContent);
-            await Task.CompletedTask;
+            return Task.FromResult<string?>(_responseContent);
         }
     }
 
@@ -43,7 +29,7 @@ namespace UnitTests
         public async Task AnalyzeDeploymentLogsAsync_ParsesValidJsonResponse()
         {
             var json = "{ \"status\": \"success\", \"issues\": [\"error1\"], \"recommendations\": [\"rec1\"], \"severity\": \"Média\", \"estimatedResolutionMinutes\": 45 }";
-            var fake = new FakeChatCompletionService(json);
+            var fake = new FakeChatCompletionAdapter(json);
 
             var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build();
             var logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<IntelligentAnalysisService>.Instance;
@@ -62,7 +48,7 @@ namespace UnitTests
         public async Task AnalyzeDeploymentLogsAsync_HandlesInvalidJsonGracefully()
         {
             var invalid = "This is not JSON";
-            var fake = new FakeChatCompletionService(invalid);
+            var fake = new FakeChatCompletionAdapter(invalid);
 
             var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build();
             var logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<IntelligentAnalysisService>.Instance;
