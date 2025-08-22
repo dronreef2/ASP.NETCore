@@ -1,5 +1,4 @@
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 using System.ComponentModel;
 
 namespace TutorCopiloto.Services
@@ -19,21 +18,22 @@ namespace TutorCopiloto.Services
     {
         private readonly ILogger<IntelligentAnalysisService> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IChatCompletionService _chatCompletion;
+        private readonly IChatCompletionAdapter _chatCompletionAdapter;
         private readonly Kernel _kernel;
 
         public IntelligentAnalysisService(
             IConfiguration configuration,
-            IChatCompletionService chatCompletionService,
+            IChatCompletionAdapter chatCompletionAdapter,
             ILogger<IntelligentAnalysisService> logger)
         {
             _configuration = configuration;
-            _chatCompletion = chatCompletionService;
+            _chatCompletionAdapter = chatCompletionAdapter;
             _logger = logger;
 
             // Simplificar inicialização sem plugins por enquanto
             var builder = Kernel.CreateBuilder();
-            builder.Services.AddSingleton(chatCompletionService);
+            // Não registramos diretamente o adapter no kernel para evitar dependências fortes em SDKs externos.
+            // Mantemos o kernel limpo e usamos o adapter dentro dos serviços.
             _kernel = builder.Build();
 
             _logger.LogInformation("IntelligentAnalysisService inicializado com serviço de IA configurado");
@@ -61,8 +61,8 @@ Por favor, forneça:
 
 Responda em formato JSON estruturado.";
 
-                var response = await _chatCompletion.GetChatMessageContentsAsync(new ChatHistory(prompt));
-                var aiResponse = response.FirstOrDefault();
+                var aiText = await _chatCompletionAdapter.GetChatResponseAsync(prompt);
+                var aiResponse = new { Content = aiText };
 
                 // Tentar desserializar a resposta da IA para um DTO estruturado
                 TutorCopiloto.Services.Dto.IntelligentAnalysisResponseDto? dto = null;
@@ -131,8 +131,8 @@ Identifique:
 4. Recomendações de otimização
 5. Ferramentas sugeridas";
 
-                var response = await _chatCompletion.GetChatMessageContentsAsync(new ChatHistory(prompt));
-                var aiResponse = response.FirstOrDefault();
+                var aiText = await _chatCompletionAdapter.GetChatResponseAsync(prompt);
+                var aiResponse = new { Content = aiText };
 
                 return new PerformanceInsight
                 {
@@ -177,8 +177,8 @@ Inclua:
 
 Formato: Relatório técnico conciso";
 
-                var response = await _chatCompletion.GetChatMessageContentsAsync(new ChatHistory(prompt));
-                return response.FirstOrDefault()?.Content ?? "Resumo não disponível";
+                var aiText = await _chatCompletionAdapter.GetChatResponseAsync(prompt);
+                return aiText ?? "Resumo não disponível";
             }
             catch (Exception ex)
             {
@@ -203,8 +203,8 @@ Inclua:
 
 Formato: Resumo executivo profissional";
 
-                var response = await _chatCompletion.GetChatMessageContentsAsync(new ChatHistory(prompt));
-                return response.FirstOrDefault()?.Content ?? "Resumo não disponível";
+                var aiText = await _chatCompletionAdapter.GetChatResponseAsync(prompt);
+                return aiText ?? "Resumo não disponível";
             }
             catch (Exception ex)
             {
@@ -229,8 +229,8 @@ Identifique:
 4. Recomendações de correção
 5. Questões de compliance";
 
-                var response = await _chatCompletion.GetChatMessageContentsAsync(new ChatHistory(prompt));
-                var aiResponse = response.FirstOrDefault();
+                var aiText = await _chatCompletionAdapter.GetChatResponseAsync(prompt);
+                var aiResponse = new { Content = aiText };
 
                 return new SecurityAnalysisResult
                 {
@@ -273,8 +273,8 @@ Detecte:
 4. Comportamentos suspeitos
 5. Sugestões de otimização";
 
-                var response = await _chatCompletion.GetChatMessageContentsAsync(new ChatHistory(prompt));
-                var aiResponse = response.FirstOrDefault();
+                var aiText = await _chatCompletionAdapter.GetChatResponseAsync(prompt);
+                var aiResponse = new { Content = aiText };
 
                 return new AnomalyDetectionResult
                 {
@@ -316,8 +316,8 @@ Forneça recomendações específicas para:
 4. Segurança
 5. Performance";
 
-                var response = await _chatCompletion.GetChatMessageContentsAsync(new ChatHistory(prompt));
-                var aiResponse = response.FirstOrDefault();
+                var aiText = await _chatCompletionAdapter.GetChatResponseAsync(prompt);
+                var aiResponse = new { Content = aiText };
 
                 return new DeploymentRecommendations
                 {

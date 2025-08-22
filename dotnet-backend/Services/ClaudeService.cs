@@ -65,7 +65,7 @@ namespace TutorCopiloto.Services
         public int OutputTokens { get; set; }
     }
 
-    public class ClaudeChatCompletionService : IClaudeChatCompletionService
+    public class ClaudeChatCompletionService : IClaudeChatCompletionService, IChatCompletionAdapter
     {
     private readonly HttpClient _httpClient;
     private readonly ILogger<ClaudeChatCompletionService> _logger;
@@ -78,7 +78,6 @@ namespace TutorCopiloto.Services
 
         public ClaudeChatCompletionService(
             HttpClient httpClient,
-            string apiKey,
             string modelId = "claude-3-5-sonnet-20241022",
             int maxTokens = 4096,
             double temperature = 0.7,
@@ -202,6 +201,28 @@ namespace TutorCopiloto.Services
                         await Task.Delay(50, cancellationToken); // Simular delay do streaming
                     }
                 }
+            }
+        }
+
+        // --- Adapter-friendly API ---
+        // Implementação simples que envia um prompt e retorna a primeira resposta textual do modelo.
+        public async Task<string?> GetChatResponseAsync(string prompt, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(prompt)) return null;
+
+            var chatHistory = new ChatHistory();
+            chatHistory.AddUserMessage(prompt);
+
+            try
+            {
+                var response = await GetChatMessageContentsAsync(chatHistory, cancellationToken: cancellationToken);
+                var first = response.FirstOrDefault();
+                return first?.Content;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro no adapter GetChatResponseAsync");
+                return null;
             }
         }
 

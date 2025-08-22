@@ -164,19 +164,19 @@ namespace TutorCopiloto.Controllers
             }
         }
 
-        private async Task<bool> ValidateGitHubSignature(string payload)
+        private Task<bool> ValidateGitHubSignature(string payload)
         {
             var secret = _configuration["GitHub:WebhookSecret"];
             if (string.IsNullOrEmpty(secret))
             {
                 _logger.LogWarning("GitHub webhook secret não configurado - pulando validação");
-                return true; // Se não há secret configurado, aceita qualquer requisição
+                return Task.FromResult(true); // Se não há secret configurado, aceita qualquer requisição
             }
 
             var signature = Request.Headers["X-Hub-Signature-256"].FirstOrDefault();
             if (string.IsNullOrEmpty(signature))
             {
-                return false;
+                return Task.FromResult(false);
             }
 
             signature = signature.Replace("sha256=", "");
@@ -185,7 +185,7 @@ namespace TutorCopiloto.Controllers
             var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(payload));
             var computedSignature = Convert.ToHexString(computedHash).ToLower();
 
-            return signature.Equals(computedSignature, StringComparison.OrdinalIgnoreCase);
+            return Task.FromResult(signature.Equals(computedSignature, StringComparison.OrdinalIgnoreCase));
         }
     }
 
