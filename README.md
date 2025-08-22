@@ -1,6 +1,6 @@
 Arquivos Estáticos: Configurar SignalR JS files
 Testes Completos: Testar todos os endpoints de AI
-
+aa
 
 
 Implementação Concluída!

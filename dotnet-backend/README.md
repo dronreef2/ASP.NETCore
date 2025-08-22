@@ -1,5 +1,5 @@
 # 🚀 ASP.NET Core Deployment Server
-
+teste
 Um mini servidor de deployment similar ao Vercel/Netlify, integrado com ngrok para exposição pública e webhooks do GitHub para deployments automáticos.
 
 ## 🌟 Funcionalidades
