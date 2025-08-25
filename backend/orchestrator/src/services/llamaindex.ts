@@ -33,6 +33,40 @@ export interface DocumentChunk {
  * Responsável por embeddings, indexação e busca semântica
  */
 export class LlamaIndexService {
+  /**
+   * Gera explicação/refatoração contextualizada usando OpenAI
+   * Busca contexto relevante no índice e gera resposta com LLM
+   */
+  async generateExplanation(query: string, indexName: string, openAiApiKey: string, model = 'gpt-4'): Promise<string> {
+    // Busca contexto relevante
+    const searchResult = await this.semanticSearch(query, indexName, { topK: 3 });
+    const context = searchResult.results.map(r => r.content).join('\n---\n');
+
+    // Monta prompt para LLM
+    const prompt = `Contexto extraído:\n${context}\n\nPergunta: ${query}\n\nExplique ou refatore conforme solicitado.`;
+
+    // Chama OpenAI
+    try {
+      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model,
+        messages: [
+          { role: 'system', content: 'Você é um especialista em código e documentação.' },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: 512,
+        temperature: 0.7
+      }, {
+        headers: {
+          'Authorization': `Bearer ${openAiApiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return response.data.choices[0].message.content;
+    } catch (error) {
+      console.error('Erro ao gerar explicação/refatoração:', error);
+      throw new Error('Falha ao gerar explicação/refatoração');
+    }
+  }
   private client: AxiosInstance;
   private readonly baseUrl = 'https://api.llamaindex.ai/v1';
 

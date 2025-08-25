@@ -14,6 +14,43 @@ import { LlamaIndexService } from './services/llamaindex.js';
 const execAsync = promisify(exec);
 
 export class ToolExecutor {
+  /**
+   * Explica diferenças entre duas versões de código
+   */
+  async explainDiff(input: ExplainDiffInput): Promise<any> {
+    const { oldContent, newContent, filePath } = input;
+    try {
+      // Calcula diff simples (linhas adicionadas/removidas)
+      const oldLines = oldContent.split('\n');
+      const newLines = newContent.split('\n');
+      const linesAdded = newLines.length - oldLines.length;
+      const linesRemoved = oldLines.length > newLines.length ? oldLines.length - newLines.length : 0;
+      const totalChanges = Math.abs(newLines.length - oldLines.length);
+
+      // Gera resumo
+      const summary = this.generateDiffSummary({
+        lines_added: linesAdded,
+        lines_removed: linesRemoved,
+        total_changes: totalChanges,
+      }, filePath);
+
+      return {
+        file_path: filePath,
+        statistics: {
+          lines_added: linesAdded,
+          lines_removed: linesRemoved,
+          total_changes: totalChanges,
+        },
+        summary,
+        diff: null, // Pode adicionar lógica de diff textual se necessário
+      };
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error.message : 'Erro ao explicar diff',
+        file_path: filePath,
+      };
+    }
+  }
   private readonly containerLimits = {
     memory: '512m',
     cpus: '0.5',
@@ -199,117 +236,75 @@ export class ToolExecutor {
 
   async searchDocs(input: SearchDocsInput): Promise<any> {
     const { query, maxResults = 5, threshold = 0.75 } = input;
-
     try {
-      // Usa LlamaIndex para busca semântica real
-      const results = await this.llamaIndex.semanticSearch(
-        query,
-        'tutor-copiloto-docs', // Nome do índice principal
-        {
-          topK: maxResults,
+      const llamaIndex = new LlamaIndexService();
+      try {
+        // Busca semântica real
+        const results = await llamaIndex.semanticSearch(
+          query,
+          'tutor-copiloto-docs',
+          {
+            topK: maxResults,
+            threshold,
+            includeMetadata: true,
+          }
+        );
+        return {
+          query,
+          results_count: results.results.length,
+          results: results.results.map((result: any) => ({
+            id: result.id,
+            content: result.content,
+            source: result.metadata?.source || 'unknown',
+            score: result.score,
+            metadata: result.metadata,
+          })),
           threshold,
-          includeMetadata: true,
-        }
-      );
-
-      return {
-        query,
-        results_count: results.results.length,
-        results: results.results.map(result => ({
-          id: result.id,
-          content: result.content,
-          source: result.metadata.source || 'unknown',
-          score: result.score,
-          metadata: result.metadata,
-        })),
-        threshold,
-        max_results: maxResults,
-        usage: results.usage,
-      };
-    } catch (error) {
-      console.error('Erro na busca LlamaIndex:', error);
-      
-      // Fallback para resultados mockados
-      const mockResults = [
-        {
-          id: 'doc-1',
-          content: `Exemplo de documentação sobre ${query}`,
-          source: 'docs/tutorial.md',
-          score: 0.89,
-          metadata: {
-            type: 'markdown',
-            section: 'introduction',
+          max_results: maxResults,
+          usage: results.usage,
+        };
+      } catch (error) {
+        console.error('Erro na busca LlamaIndex:', error);
+        // Fallback para resultados mockados
+        const mockResults = [
+          {
+            id: 'doc-1',
+            content: `Exemplo de documentação sobre ${query}`,
+            source: 'docs/tutorial.md',
+            score: 0.89,
+            metadata: {
+              type: 'markdown',
+              section: 'introduction',
+            },
           },
-        },
-        {
-          id: 'doc-2', 
-          content: `Mais informações relacionadas a ${query}`,
-          source: 'docs/advanced.md',
-          score: 0.82,
-          metadata: {
-            type: 'markdown',
-            section: 'advanced-topics',
+          {
+            id: 'doc-2',
+            content: `Mais informações relacionadas a ${query}`,
+            source: 'docs/advanced.md',
+            score: 0.82,
+            metadata: {
+              type: 'markdown',
+              section: 'advanced-topics',
+            },
           },
-        },
-      ];
-
-      const filteredResults = mockResults
-        .filter(r => r.score >= threshold)
-        .slice(0, maxResults);
-
-      return {
-        query,
-        results_count: filteredResults.length,
-        results: filteredResults,
-        threshold,
-        max_results: maxResults,
-        fallback: true,
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
-      };
-    }
-  }
-
-  async explainDiff(input: ExplainDiffInput): Promise<any> {
-    const { oldContent, newContent, filePath } = input;
-
-    try {
-      // Cria arquivos temporários para usar git diff
-      const tempDir = await fs.mkdtemp('/tmp/diff-');
-      const oldFile = path.join(tempDir, 'old.txt');
-      const newFile = path.join(tempDir, 'new.txt');
-
-      await fs.writeFile(oldFile, oldContent);
-      await fs.writeFile(newFile, newContent);
-
-      // Gera diff unificado
-      const { stdout: diffOutput } = await execAsync(
-        `diff -u "${oldFile}" "${newFile}" || true`,
-        { timeout: 5000 }
-      );
-
-      // Calcula estatísticas
-      const oldLines = oldContent.split('\\n');
-      const newLines = newContent.split('\\n');
-      
-      const stats = {
-        lines_added: newLines.length - oldLines.length,
-        lines_removed: oldLines.length > newLines.length ? oldLines.length - newLines.length : 0,
-        total_changes: Math.abs(newLines.length - oldLines.length),
-      };
-
-      // Cleanup
-      await fs.rm(tempDir, { recursive: true });
-
-      return {
-        file_path: filePath,
-        diff: diffOutput,
-        statistics: stats,
-        summary: this.generateDiffSummary(stats, filePath),
-      };
+        ];
+        const filteredResults = mockResults
+          .filter(r => r.score >= threshold)
+          .slice(0, maxResults);
+        return {
+          query,
+          results_count: filteredResults.length,
+          results: filteredResults,
+          threshold,
+          max_results: maxResults,
+          fallback: true,
+          error: error instanceof Error ? error.message : 'Erro desconhecido',
+        };
+      }
     } catch (error) {
       return {
-        error: error instanceof Error ? error.message : 'Erro ao explicar diff',
-        file_path: filePath,
+        error: error instanceof Error ? error.message : 'Erro ao buscar documentação',
+        query,
       };
     }
   }

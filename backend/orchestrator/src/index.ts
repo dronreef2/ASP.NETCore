@@ -51,7 +51,9 @@ await fastify.register(swaggerUi, {
 });
 
 // Serviços
+import { LlamaIndexService } from './services/llamaindex.js';
 const claudeService = new ClaudeService();
+const llamaIndexService = new LlamaIndexService();
 
 // Armazenamento temporário (em produção usar Redis/PostgreSQL)
 const conversations = new Map<string, Conversation>();
@@ -80,6 +82,24 @@ const chatRequestSchema = {
 };
 
 // Rotas REST
+
+// Endpoint para explicação/refatoração contextualizada via LlamaIndex + OpenAI
+fastify.post('/api/llama/explain', async (request, reply) => {
+  const { query, indexName } = request.body as { query: string; indexName: string };
+  const openAiApiKey = process.env.OPENAI_API_KEY;
+  if (!openAiApiKey) {
+    reply.status(500);
+    return { error: 'OPENAI_API_KEY não configurada no servidor.' };
+  }
+  try {
+    const result = await llamaIndexService.generateExplanation(query, indexName, openAiApiKey);
+    return { result };
+  } catch (error) {
+    request.log.error(error);
+    reply.status(500);
+    return { error: 'Falha ao gerar explicação/refatoração', message: error instanceof Error ? error.message : String(error) };
+  }
+});
 fastify.post('/api/chat', {
   schema: {
     body: chatRequestSchema,
@@ -198,7 +218,7 @@ fastify.register(async function (fastify) {
     const connectionId = uuidv4();
     activeConnections.set(connectionId, connection);
     
-    connection.socket.on('message', async (message) => {
+  connection.socket.on('message', async (message: Buffer) => {
       try {
         const data = JSON.parse(message.toString());
         const { message: userMessage, userId, conversationId: existingConversationId, context } = data;
