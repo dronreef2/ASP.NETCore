@@ -151,21 +151,26 @@ namespace TutorCopiloto
             });
 
             // 5. JWT Authentication
-            var jwtSecretKey = builder.Configuration["JWT:SecretKey"] 
-                ?? Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
-                ?? "DefaultSecretKeyForDevelopmentOnlyNotForProduction2024!@#$";
-            
+            var jwtSecretKey = builder.Configuration["JWT:SecretKey"] ?? Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
+
+            if (string.IsNullOrEmpty(jwtSecretKey))
+            {
+                if (builder.Environment.IsDevelopment())
+                {
+                    // In development, we can allow a default key but it's not recommended for production.
+                    // For a real application, use .NET Secret Manager or environment variables.
+                    // DO NOT USE THIS KEY IN PRODUCTION.
+                    jwtSecretKey = "STRONG_DEFAULT_DEV_KEY_CHANGE_ME_#@$!_2024";
+                    Log.Warning("Using a default JWT secret key. Please configure a proper secret for development using .NET Secret Manager.");
+                }
+                else
+                {
+                    throw new InvalidOperationException("JWT Secret Key is not configured. Please set the 'JWT:SecretKey' in configuration or 'JWT_SECRET_KEY' environment variable.");
+                }
+            }
+
             var jwtIssuer = builder.Configuration["JWT:Issuer"] ?? "TutorCopiloto";
             var jwtAudience = builder.Configuration["JWT:Audience"] ?? "TutorCopiloto-Users";
-
-            // Harden: exigir JWT secret em ambientes não-dev
-            if (!builder.Environment.IsDevelopment() && 
-                string.IsNullOrEmpty(builder.Configuration["JWT_SECRET_KEY"]) &&
-                string.IsNullOrEmpty(builder.Configuration["JWT:SecretKey"]) &&
-                string.IsNullOrEmpty(Environment.GetEnvironmentVariable("JWT_SECRET_KEY")))
-            {
-                throw new InvalidOperationException("JWT_SECRET_KEY é obrigatório em produção");
-            }
 
             builder.Services.AddAuthentication(options =>
             {

@@ -1,16 +1,4 @@
-quero um arquivo para implementação um agente de IA em meu projeto(ASP.NET Core) que analisa projetos de programação (já implementado) usando Semantic Kernel, Microsoft.Extensions.AI e Microsoft.Extensions.VectorData, usar Codestral para analise, 
-API_KEY:n1mO5B0MSnnKenkKe4KRm4uSExU2DdhB
-Codestral
-Use o Codestral gratuitamente através da sua ferramenta favorita de completação de código.
-Chave de API
-Use esta chave de API para chamar o Codestral através da sua ferramenta favorita de completação de código.
-
-Excelente escolha, Guilherme! Com o Semantic Kernel, o novo pacote Microsoft.Extensions.AI e o Microsoft.Extensions.VectorData, você pode criar um agente inteligente capaz de:
-
-📂 Analisar projetos de programação (código-fonte, estrutura, dependências).
-🧠 Usar IA para interpretar e responder perguntas sobre o projeto.
-🔍 Buscar informações contextuais em vetores (usando embeddings).
-🗣️ Interagir via chat com o usuário (usando modelos como Codestral ou Phi-3).
+# 🎓 Tutor Copiloto
 
 
 
