@@ -1,0 +1,30 @@
+@ApiGateway_HostAddress = http://localhost:8080
+
+### Teste básico do Gateway - Health Check
+GET {{ApiGateway_HostAddress}}/health
+Accept: application/json
+
+### Teste de proxy para API backend
+GET {{ApiGateway_HostAddress}}/api/health/dotnet
+Accept: application/json
+
+### Teste de proxy para API AI Analysis
+GET {{ApiGateway_HostAddress}}/api/ai-analysis/executive-summary?days=1
+Accept: application/json
+
+### Teste de proxy para deployments
+GET {{ApiGateway_HostAddress}}/api/webhook/deployments
+Accept: application/json
+
+### Teste de proxy para SignalR negotiate
+POST {{ApiGateway_HostAddress}}/chathub/negotiate?negotiateVersion=1
+Accept: application/json
+Content-Type: application/json
+
+{
+  "firewallToken": null
+}
+
+### Teste direto do backend (para comparação)
+GET http://localhost:5000/api/health/dotnet
+Accept: application/json
