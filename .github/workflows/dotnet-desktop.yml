@@ -55,11 +55,11 @@ jobs:
 
     # Restore dependencies
     - name: Restore dependencies
-      run: dotnet restore $env:Solution_Name
+      run: dotnet restore ${{ env.Solution_Name }}
 
     # Build the application
     - name: Build
-      run: dotnet build $env:Solution_Name --configuration $env:Configuration --no-restore
+      run: dotnet build ${{ env.Solution_Name }} --configuration ${{ env.Configuration }} --no-restore
       env:
         Configuration: ${{ matrix.configuration }}
 
@@ -71,7 +71,7 @@ jobs:
 
     # Publish the application
     - name: Publish
-      run: dotnet publish $env:Project_Path --configuration $env:Configuration --no-build --output ./publish
+      run: dotnet publish ${{ env.Project_Path }} --configuration ${{ env.Configuration }} --no-build --output ./publish
       env:
         Configuration: ${{ matrix.configuration }}
 
