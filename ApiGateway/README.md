@@ -8,6 +8,8 @@ Este é um gateway configurável mínimo baseado no YARP (Yet Another Reverse Pr
 - **Balanceamento Simples**: Suporte a múltiplos destinos por cluster
 - **Proxy Reverso Puro**: Sem autenticação ou métricas extras
 - **Configuração Flexível**: Fácil de modificar rotas e destinos
+- **Integração GitHub**: Consultas de repositórios e diagnósticos
+- **Monitoramento**: Métricas e status do sistema
 
 ## 📋 Configuração
 
@@ -150,7 +152,79 @@ Veja o arquivo `appsettings.Advanced.json` para exemplos de:
 - Transforms de headers
 - Políticas de roteamento avançadas
 
-## 📦 Dependências
+## � Integração GitHub
+
+O gateway inclui rotas especiais para consultar a API do GitHub:
+
+### Configuração
+1. Obtenha um token do GitHub em [Personal Access Tokens](https://github.com/settings/tokens)
+2. Configure o token no `appsettings.GitHub.json`
+3. Use as rotas `/github/*` para consultas
+
+### Rotas Disponíveis
+- `/github/user/repos` - Repositórios do usuário
+- `/github/repos/{owner}/{repo}` - Informações do repositório
+- `/github/repos/{owner}/{repo}/issues` - Issues
+- `/github/repos/{owner}/{repo}/pulls` - Pull requests
+- `/github/repos/{owner}/{repo}/commits` - Commits
+- `/github/repos/{owner}/{repo}/branches` - Branches
+
+### Exemplo de Uso
+```bash
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+     http://localhost:8080/github/repos/dronreef2/ASP.NETCore
+```
+
+Para documentação completa da integração GitHub, consulte `GITHUB_INTEGRATION.md`.
+
+## � Sistema de Deployment
+
+O gateway também fornece acesso ao sistema de deployment integrado:
+
+### Interface Web
+- `/deployments` - Dashboard completo para gerenciar deployments
+
+### APIs de Deployment
+- `GET /api/webhook/deployments` - Listar todos os deployments
+- `GET /api/webhook/deployments/{id}` - Detalhes de um deployment específico
+- `GET /api/webhook/deployments/{id}/logs` - Logs de um deployment
+- `POST /api/webhook/deploy` - Iniciar deploy manual
+- `POST /api/webhook/github` - Webhook do GitHub (para testes)
+
+### Deploy Manual via Gateway
+```bash
+curl -X POST http://localhost:8080/api/webhook/deploy \
+  -H "Content-Type: application/json" \
+  -d '{
+    "repositoryUrl": "https://github.com/dronreef2/ASP.NETCore.git",
+    "branch": "main",
+    "author": "Deploy via Gateway"
+  }'
+```
+
+### Funcionalidades do Sistema de Deployment
+- ✅ **Deployments automáticos** via webhooks do GitHub
+- ✅ **Deploy manual** via interface web ou API
+- ✅ **Logs em tempo real** para cada deployment
+- ✅ **Dashboard web** para gerenciamento completo
+- ✅ **Integração ngrok** para webhooks públicos
+- ✅ **Status tracking** (Pending → Running → Success/Failed)
+
+Para documentação completa do sistema de deployment, consulte `DEPLOYMENT_GUIDE.md`.
+
+## �📊 Diagnósticos e Monitoramento
+
+### Rotas de Diagnóstico
+- `/diagnostics/status` - Status geral do sistema
+- `/diagnostics/logs` - Logs do sistema
+- `/diagnostics/repo-stats` - Estatísticas do repositório
+- `/diagnostics/activity-report` - Relatório de atividade
+
+### Rotas de Métricas
+- `/metrics/performance` - Métricas de performance
+- `/status/detailed` - Health check detalhado
+
+## �📦 Dependências
 
 - **Yarp.ReverseProxy**: 2.3.0 - Core do reverse proxy
 - **ASP.NET Core**: Framework web
@@ -161,6 +235,9 @@ Veja o arquivo `appsettings.Advanced.json` para exemplos de:
 - **Load Balancing**: Distribuição de carga
 - **API Gateway**: Ponto único de entrada
 - **Desenvolvimento**: Proxy para serviços locais
+- **Integração GitHub**: Consultas de repositórios e diagnósticos
+- **Sistema de Deployment**: Deployments automáticos e manuais
+- **Monitoramento**: Status e métricas do sistema
 
 ## ⚠️ Limitações da Versão Mínima
 
@@ -207,5 +284,6 @@ docker build -t api-gateway .
 # Executar container
 docker run -p 8080:8080 api-gateway
 ```</content>
+<parameter name="filePath">/workspaces/ASP.NETCore/ApiGateway/README.md</content>
 <parameter name="filePath">/workspaces/ASP.NETCore/ApiGateway/README.md</content>
 <parameter name="filePath">/workspaces/ASP.NETCore/ApiGateway/README.md

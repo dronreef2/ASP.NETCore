@@ -39,6 +39,18 @@ SignalR Policy: Configurada especificamente para hubs
 Proxy Vite: Corrigido para apontar para porta 5000
 A implementação está 100% funcional e pronta para uso! O SignalR agora suporta autenticação anônima completa com comunicação em tempo real entre frontend e backend. 🎉
 
+consulta externa Via API 
+
+# Qualquer repositório GitHub
+curl -X POST http://localhost:8080/api/webhook/deploy \
+  -H "Content-Type: application/json" \
+  -d '{
+    "repositoryUrl": "https://github.com/QUALQUER_USUARIO/QUALQUER_REPO.git",
+    "branch": "main",
+    "author": "Seu Nome"
+  }'
+
+
 # 🎓 Tutor Copiloto
 
 

@@ -62,21 +62,41 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Dica:</strong> Você pode usar qualquer repositório GitHub público! 
+                    Cole a URL completa do repositório que deseja analisar.
+                </div>
                 <form id="manual-deploy-form">
                     <div class="mb-3">
-                        <label for="repository-url" class="form-label">URL do Repositório *</label>
+                        <label for="repository-url" class="form-label">
+                            URL do Repositório GitHub *
+                            <small class="text-muted">(público ou privado)</small>
+                        </label>
                         <input type="url" class="form-control" id="repository-url" required 
                                placeholder="https://github.com/usuario/repositorio.git">
+                        <div class="form-text">
+                            <i class="fas fa-lightbulb"></i> Exemplos: 
+                            <code>microsoft/vscode</code>, 
+                            <code>facebook/react</code>, 
+                            <code>seu-usuario/projeto</code>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="branch" class="form-label">Branch</label>
                         <input type="text" class="form-control" id="branch" value="main" 
-                               placeholder="main">
+                               placeholder="main, master, develop, feature/nome">
+                        <div class="form-text">
+                            <i class="fas fa-code-branch"></i> Branch padrão: main
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="author" class="form-label">Autor</label>
                         <input type="text" class="form-control" id="author" 
-                               placeholder="Seu nome">
+                               placeholder="Seu nome ou identificador">
+                        <div class="form-text">
+                            <i class="fas fa-user"></i> Quem está solicitando o deploy
+                        </div>
                     </div>
                 </form>
             </div>
@@ -283,6 +303,13 @@ async function stopNgrok() {
 
 async function submitManualDeploy() {
     const form = document.getElementById('manual-deploy-form');
+    const repositoryUrl = document.getElementById('repository-url').value;
+    
+    // Validação básica da URL do GitHub
+    if (!repositoryUrl.includes('github.com')) {
+        alert('Por favor, insira uma URL válida do GitHub');
+        return;
+    }
     
     if (!form.checkValidity()) {
         form.reportValidity();
@@ -290,10 +317,16 @@ async function submitManualDeploy() {
     }
     
     const data = {
-        repositoryUrl: document.getElementById('repository-url').value,
+        repositoryUrl: repositoryUrl,
         branch: document.getElementById('branch').value || 'main',
         author: document.getElementById('author').value || 'Manual Deploy'
     };
+    
+    // Mostra loading
+    const submitBtn = event.target;
+    const originalHTML = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando...';
     
     try {
         const response = await fetch('/api/webhook/deploy', {
@@ -304,18 +337,23 @@ async function submitManualDeploy() {
         
         if (response.ok) {
             const result = await response.json();
-            alert(`Deploy iniciado! ID: ${result.deploymentId}`);
+            alert(`✅ Deploy iniciado com sucesso!\n\nID: ${result.deploymentId}\n\nAcompanhe o progresso na lista de deployments.`);
             
             // Fecha modal e recarrega lista
             bootstrap.Modal.getInstance(document.getElementById('manualDeployModal')).hide();
             form.reset();
             loadDeployments();
         } else {
-            alert('Erro ao iniciar deploy');
+            const error = await response.json();
+            alert(`❌ Erro ao iniciar deploy: ${error.error || 'Erro desconhecido'}`);
         }
     } catch (error) {
         console.error('Erro ao fazer deploy:', error);
-        alert('Erro ao fazer deploy');
+        alert('❌ Erro de conexão. Verifique se o servidor está rodando.');
+    } finally {
+        // Restaura botão
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHTML;
     }
 }
 

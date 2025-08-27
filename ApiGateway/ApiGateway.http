@@ -25,6 +25,187 @@ Content-Type: application/json
   "firewallToken": null
 }
 
+### ============================================
+### 🚀 GITHUB API - Consultas de Repositório
+### ============================================
+
+### Listar repositórios do usuário (requer token)
+GET {{ApiGateway_HostAddress}}/github/user/repos
+Accept: application/vnd.github.v3+json
+Authorization: Bearer YOUR_GITHUB_TOKEN_HERE
+
+### Obter informações específicas do repositório ASP.NETCore
+GET {{ApiGateway_HostAddress}}/github/repos/dronreef2/ASP.NETCore
+Accept: application/vnd.github.v3+json
+Authorization: Bearer YOUR_GITHUB_TOKEN_HERE
+
+### Listar issues do repositório
+GET {{ApiGateway_HostAddress}}/github/repos/dronreef2/ASP.NETCore/issues
+Accept: application/vnd.github.v3+json
+Authorization: Bearer YOUR_GITHUB_TOKEN_HERE
+
+### Listar pull requests do repositório
+GET {{ApiGateway_HostAddress}}/github/repos/dronreef2/ASP.NETCore/pulls
+Accept: application/vnd.github.v3+json
+Authorization: Bearer YOUR_GITHUB_TOKEN_HERE
+
+### Obter commits recentes
+GET {{ApiGateway_HostAddress}}/github/repos/dronreef2/ASP.NETCore/commits?per_page=10
+Accept: application/vnd.github.v3+json
+Authorization: Bearer YOUR_GITHUB_TOKEN_HERE
+
+### Listar branches
+GET {{ApiGateway_HostAddress}}/github/repos/dronreef2/ASP.NETCore/branches
+Accept: application/vnd.github.v3+json
+Authorization: Bearer YOUR_GITHUB_TOKEN_HERE
+
+### Obter conteúdo de um arquivo específico
+GET {{ApiGateway_HostAddress}}/github/repos/dronreef2/ASP.NETCore/contents/README.md
+Accept: application/vnd.github.v3+json
+Authorization: Bearer YOUR_GITHUB_TOKEN_HERE
+
+### ============================================
+### 🔍 DIAGNÓSTICOS E MONITORAMENTO
+### ============================================
+
+### Status geral do sistema
+GET {{ApiGateway_HostAddress}}/diagnostics/status
+Accept: application/json
+
+### Métricas de performance
+GET {{ApiGateway_HostAddress}}/metrics/performance
+Accept: application/json
+
+### Logs de sistema
+GET {{ApiGateway_HostAddress}}/diagnostics/logs?level=info&limit=100
+Accept: application/json
+
+### Health check detalhado
+GET {{ApiGateway_HostAddress}}/status/detailed
+Accept: application/json
+
+### ============================================
+### 📊 ESTATÍSTICAS E RELATÓRIOS
+### ============================================
+
+### Estatísticas do repositório
+GET {{ApiGateway_HostAddress}}/diagnostics/repo-stats
+Accept: application/json
+
+### Relatório de atividade
+GET {{ApiGateway_HostAddress}}/diagnostics/activity-report?period=7d
+Accept: application/json
+
+### ============================================
+### 🧪 TESTES DIRETOS (Comparação)
+### ============================================
+
 ### Teste direto do backend (para comparação)
 GET http://localhost:5000/api/health/dotnet
 Accept: application/json
+
+### Teste direto da API do GitHub (para comparação)
+GET https://api.github.com/repos/dronreef2/ASP.NETCore
+Accept: application/vnd.github.v3+json
+Authorization: Bearer YOUR_GITHUB_TOKEN_HERE
+
+### ============================================
+### 🚀 DEPLOYMENT SYSTEM - Sistema de Deploy
+### ============================================
+
+### 🌐 INTERFACE WEB - Dashboard de Deployments
+GET {{ApiGateway_HostAddress}}/deployments
+Accept: text/html
+
+### 📋 API - Listar todos os deployments
+GET {{ApiGateway_HostAddress}}/api/webhook/deployments?page=1&size=10
+Accept: application/json
+
+### 📋 API - Listar deployments (página 2)
+GET {{ApiGateway_HostAddress}}/api/webhook/deployments?page=2&size=5
+Accept: application/json
+
+### 🔍 API - Buscar deployment específico por ID
+GET {{ApiGateway_HostAddress}}/api/webhook/deployments/DEPLOYMENT_ID_AQUI
+Accept: application/json
+
+### 📜 API - Obter logs de um deployment específico
+GET {{ApiGateway_HostAddress}}/api/webhook/deployments/DEPLOYMENT_ID_AQUI/logs
+Accept: application/json
+
+### 🚀 API - Iniciar deploy manual
+POST {{ApiGateway_HostAddress}}/api/webhook/deploy
+Accept: application/json
+Content-Type: application/json
+
+{
+  "repositoryUrl": "https://github.com/usuario/repositorio.git",
+  "branch": "main",
+  "author": "Seu nome"
+}
+
+### 🚀 API - Exemplo com repositório específico
+POST {{ApiGateway_HostAddress}}/api/webhook/deploy
+Accept: application/json
+Content-Type: application/json
+
+{
+  "repositoryUrl": "https://github.com/microsoft/vscode.git",
+  "branch": "main",
+  "author": "Teste Microsoft"
+}
+
+### 🚀 API - Exemplo com repositório de exemplo
+POST {{ApiGateway_HostAddress}}/api/webhook/deploy
+Accept: application/json
+Content-Type: application/json
+
+{
+  "repositoryUrl": "https://github.com/facebook/react.git",
+  "branch": "main",
+  "author": "Teste Facebook"
+}
+
+### 🔧 API - Simular webhook do GitHub (para testes)
+POST {{ApiGateway_HostAddress}}/api/webhook/github
+Accept: application/json
+Content-Type: application/json
+X-GitHub-Event: push
+
+{
+  "ref": "refs/heads/main",
+  "after": "abc123def456",
+  "repository": {
+    "name": "ASP.NETCore",
+    "full_name": "dronreef2/ASP.NETCore",
+    "clone_url": "https://github.com/dronreef2/ASP.NETCore.git"
+  },
+  "head_commit": {
+    "author": {
+      "name": "Test Author"
+    },
+    "message": "Test commit message"
+  }
+}
+
+### 🧪 TESTES DIRETOS DO BACKEND (Comparação)
+### ============================================
+
+### Teste direto - Dashboard de deployments
+GET http://localhost:5000/deployments
+Accept: text/html
+
+### Teste direto - Listar deployments
+GET http://localhost:5000/api/webhook/deployments
+Accept: application/json
+
+### Teste direto - Deploy manual
+POST http://localhost:5000/api/webhook/deploy
+Accept: application/json
+Content-Type: application/json
+
+{
+  "repositoryUrl": "https://github.com/dronreef2/ASP.NETCore.git",
+  "branch": "main",
+  "author": "Teste Direto"
+}
