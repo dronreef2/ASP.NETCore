@@ -12,6 +12,7 @@ namespace TutorCopiloto.Services
         Task<string> GenerateJwtTokenAsync(string userId, string userName, string? email = null);
         Task<ClaimsPrincipal?> ValidateTokenAsync(string token);
         Task<string> GenerateAnonymousTokenAsync(string anonymousId);
+        Task<string> GenerateAnonymousTokenAsync(string anonymousId, string displayName);
         Task<bool> IsTokenValidAsync(string token);
         Task<TokenValidationResult?> GetTokenInfoAsync(string token);
     }
@@ -83,6 +84,11 @@ namespace TutorCopiloto.Services
 
         public async Task<string> GenerateAnonymousTokenAsync(string anonymousId)
         {
+            return await GenerateAnonymousTokenAsync(anonymousId, $"Anonymous_{anonymousId}");
+        }
+
+        public async Task<string> GenerateAnonymousTokenAsync(string anonymousId, string displayName)
+        {
             try
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
@@ -91,8 +97,9 @@ namespace TutorCopiloto.Services
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.NameIdentifier, anonymousId),
-                    new Claim(ClaimTypes.Name, $"Anonymous_{anonymousId}"),
+                    new Claim(ClaimTypes.Name, displayName),
                     new Claim("anonymousId", anonymousId),
+                    new Claim("displayName", displayName),
                     new Claim("userType", "anonymous"),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(JwtRegisteredClaimNames.Iat, 
@@ -111,7 +118,7 @@ namespace TutorCopiloto.Services
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 var tokenString = tokenHandler.WriteToken(token);
 
-                _logger.LogInformation("Token anônimo gerado para ID: {AnonymousId}", anonymousId);
+                _logger.LogInformation("Token anônimo gerado para ID: {AnonymousId} com nome: {DisplayName}", anonymousId, displayName);
                 return await Task.FromResult(tokenString);
             }
             catch (Exception ex)
@@ -175,6 +182,7 @@ namespace TutorCopiloto.Services
                 var userName = principal.FindFirst(ClaimTypes.Name)?.Value;
                 var email = principal.FindFirst(ClaimTypes.Email)?.Value;
                 var anonymousId = principal.FindFirst("anonymousId")?.Value;
+                var displayName = principal.FindFirst("displayName")?.Value;
                 var userType = principal.FindFirst("userType")?.Value;
 
                 return new TokenValidationResult
@@ -184,6 +192,7 @@ namespace TutorCopiloto.Services
                     UserName = userName ?? "",
                     Email = email ?? "",
                     AnonymousId = anonymousId ?? "",
+                    DisplayName = displayName ?? "",
                     UserType = userType ?? "user",
                     Claims = principal.Claims.ToList()
                 };
@@ -225,6 +234,13 @@ namespace TutorCopiloto.Services
         public required string Token { get; set; }
         public DateTime Expires { get; set; }
         public required string AnonymousId { get; set; }
+        public required string DisplayName { get; set; }
+    }
+
+    public class AnonymousLoginRequest
+    {
+        public string? DeviceId { get; set; }
+        public string? DisplayName { get; set; }
     }
 
     public class TokenValidationResult
@@ -234,6 +250,7 @@ namespace TutorCopiloto.Services
         public required string UserName { get; set; }
         public string? Email { get; set; }
         public string? AnonymousId { get; set; }
+        public string? DisplayName { get; set; }
         public string UserType { get; set; } = "user";
         public List<Claim> Claims { get; set; } = new();
     }

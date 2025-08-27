@@ -137,6 +137,7 @@ namespace TutorCopiloto
             builder.Services.AddScoped<IIntelligentAnalysisService, IntelligentAnalysisService>();
             builder.Services.AddScoped<IOnnxInferenceService, OnnxInferenceService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IGitService, GitService>();
             builder.Services.AddSingleton<INgrokTunnelService, NgrokTunnelService>();
             builder.Services.AddHostedService<NgrokTunnelService>(provider => 
                 (NgrokTunnelService)provider.GetRequiredService<INgrokTunnelService>());
@@ -148,6 +149,7 @@ namespace TutorCopiloto
                 options.EnableDetailedErrors = builder.Environment.IsDevelopment();
                 options.KeepAliveInterval = TimeSpan.FromSeconds(15);
                 options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
+                options.MaximumReceiveMessageSize = 1024 * 1024; // 1MB
             });
 
             // 5. JWT Authentication
@@ -300,12 +302,26 @@ namespace TutorCopiloto
                 {
                     var corsOrigins = builder.Configuration["CORS:Origins"]?.Split(',')
                         ?? Environment.GetEnvironmentVariable("CORS_ORIGINS")?.Split(',')
-                        ?? new[] { "http://localhost:3000", "http://localhost:5173" };
+                        ?? new[] { "http://localhost:3000", "http://localhost:5173", "http://localhost:5000" };
 
                     policy.WithOrigins(corsOrigins)
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials();
+                });
+
+                // Política específica para SignalR
+                options.AddPolicy("SignalRPolicy", policy =>
+                {
+                    var corsOrigins = builder.Configuration["CORS:Origins"]?.Split(',')
+                        ?? Environment.GetEnvironmentVariable("CORS_ORIGINS")?.Split(',')
+                        ?? new[] { "http://localhost:3000", "http://localhost:5173", "http://localhost:5000" };
+
+                    policy.WithOrigins(corsOrigins)
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials()
+                          .WithExposedHeaders("X-Connection-Id");
                 });
             });
 
@@ -350,7 +366,7 @@ namespace TutorCopiloto
             // 6. Mapping
             app.MapRazorPages();
             app.MapControllers();
-            app.MapHub<ChatHub>("/chathub");
+            app.MapHub<ChatHub>("/chathub").RequireCors("SignalRPolicy");
 
             // 6. Health Checks
             app.MapHealthChecks("/health");

@@ -22,16 +22,21 @@
     "k8s:status": "kubectl get pods,services,ingress -n tutor-copiloto"
   },
   "devDependencies": {
-    "turbo": "^1.13.4",
     "@types/node": "^20.14.0",
-    "typescript": "^5.5.0",
-    "eslint": "^8.57.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
-    "prettier": "^3.3.0"
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.0",
+    "turbo": "^1.13.4",
+    "typescript": "^5.5.0"
   },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
+  },
+  "dependencies": {
+    "@angular/common": "^20.2.1",
+    "@angular/core": "^20.2.1",
+    "rxjs": "^7.8.2"
   }
 }

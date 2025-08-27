@@ -86,21 +86,25 @@ namespace TutorCopiloto.Controllers
         }
 
         [HttpPost("anonymous")]
-        public async Task<ActionResult<AnonymousLoginResult>> LoginAnonymous()
+        [AllowAnonymous]
+        public async Task<ActionResult<AnonymousLoginResult>> LoginAnonymous([FromBody] AnonymousLoginRequest? request = null)
         {
             try
             {
-                var anonymousId = Guid.NewGuid().ToString();
-                var token = await _authService.GenerateAnonymousTokenAsync(anonymousId);
+                var anonymousId = request?.DeviceId ?? Guid.NewGuid().ToString();
+                var displayName = request?.DisplayName ?? $"Visitante_{anonymousId.Substring(0, 8)}";
+                
+                var token = await _authService.GenerateAnonymousTokenAsync(anonymousId, displayName);
 
                 var result = new AnonymousLoginResult
                 {
                     Token = token,
                     Expires = DateTime.UtcNow.AddHours(1),
-                    AnonymousId = anonymousId
+                    AnonymousId = anonymousId,
+                    DisplayName = displayName
                 };
 
-                _logger.LogInformation("Login anônimo realizado para ID: {AnonymousId}", anonymousId);
+                _logger.LogInformation("Login anônimo realizado para ID: {AnonymousId} com nome: {DisplayName}", anonymousId, displayName);
                 return Ok(result);
             }
             catch (Exception ex)

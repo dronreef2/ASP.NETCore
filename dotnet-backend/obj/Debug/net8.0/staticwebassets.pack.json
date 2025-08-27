@@ -1,6 +1,10 @@
 {
   "Files": [
     {
+      "Id": "/workspaces/ASP.NETCore/dotnet-backend/wwwroot/lib/microsoft/signalr/dist/browser/signalr.js",
+      "PackagePath": "staticwebassets/lib/microsoft/signalr/dist/browser/signalr.js"
+    },
+    {
       "Id": "/workspaces/ASP.NETCore/dotnet-backend/wwwroot/lib/microsoft/signalr/dist/browser/signalr.min.js",
       "PackagePath": "staticwebassets/lib/microsoft/signalr/dist/browser/signalr.min.js"
     },

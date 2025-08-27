@@ -5917,7 +5917,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
-      "Anthropic.SDK >= 0.1.0",
+      "Anthropic.SDK >= 1.0.0",
       "Microsoft.ApplicationInsights.AspNetCore >= 2.22.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 8.0.8",
       "Microsoft.EntityFrameworkCore.Design >= 8.0.8",
@@ -5984,7 +5984,7 @@
         "dependencies": {
           "Anthropic.SDK": {
             "target": "Package",
-            "version": "[0.1.0, )"
+            "version": "[1.0.0, )"
           },
           "Microsoft.ApplicationInsights.AspNetCore": {
             "target": "Package",
@@ -6089,17 +6089,5 @@
         "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.412/PortableRuntimeIdentifierGraph.json"
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1603",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "TutorCopiloto depends on Anthropic.SDK (>= 0.1.0) but Anthropic.SDK 0.1.0 was not found. An approximate best match of Anthropic.SDK 1.0.0 was resolved.",
-      "libraryId": "Anthropic.SDK",
-      "targetGraphs": [
-        "net8.0"
-      ]
-    }
-  ]
+  }
 }

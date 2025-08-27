@@ -72,6 +72,7 @@ export class LlamaIndexService {
 
   constructor() {
     const apiKey = process.env.LLAMAINDEX_API_KEY;
+    console.log('LLAMAINDEX_API_KEY:', apiKey);
     if (!apiKey) {
       throw new Error('LLAMAINDEX_API_KEY não configurada');
     }

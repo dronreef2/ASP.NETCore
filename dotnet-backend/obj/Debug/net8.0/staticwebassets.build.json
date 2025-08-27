@@ -1,11 +1,58 @@
 {
   "Version": 1,
-  "Hash": "OintR435W9Yk8uSqQtO8VpAErsTZ/pdpE2tuSED8KTQ=",
+  "Hash": "t4ATvy8dOBG7QlzHF/m8DL8ZCAHpGQnsW7qbf5RbyWQ=",
   "Source": "TutorCopiloto",
   "BasePath": "_content/TutorCopiloto",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
+  "DiscoveryPatterns": [
+    {
+      "Name": "TutorCopiloto/wwwroot",
+      "Source": "TutorCopiloto",
+      "ContentRoot": "/workspaces/ASP.NETCore/dotnet-backend/wwwroot/",
+      "BasePath": "_content/TutorCopiloto",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "/workspaces/ASP.NETCore/dotnet-backend/wwwroot/lib/microsoft/signalr/dist/browser/signalr.js",
+      "SourceId": "TutorCopiloto",
+      "SourceType": "Discovered",
+      "ContentRoot": "/workspaces/ASP.NETCore/dotnet-backend/wwwroot/",
+      "BasePath": "_content/TutorCopiloto",
+      "RelativePath": "lib/microsoft/signalr/dist/browser/signalr.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/lib/microsoft/signalr/dist/browser/signalr.js"
+    },
+    {
+      "Identity": "/workspaces/ASP.NETCore/dotnet-backend/wwwroot/lib/microsoft/signalr/dist/browser/signalr.min.js",
+      "SourceId": "TutorCopiloto",
+      "SourceType": "Discovered",
+      "ContentRoot": "/workspaces/ASP.NETCore/dotnet-backend/wwwroot/",
+      "BasePath": "_content/TutorCopiloto",
+      "RelativePath": "lib/microsoft/signalr/dist/browser/signalr.min.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/lib/microsoft/signalr/dist/browser/signalr.min.js"
+    }
+  ]
 }
