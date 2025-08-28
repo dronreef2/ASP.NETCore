@@ -703,4 +703,15 @@ namespace TutorCopiloto.Services
         public string RepositoryUrl { get; set; } = string.Empty;
         public DeploymentFeatures Features { get; set; } = new();
     }
+
+    public class DeploymentAnalysis
+    {
+        public Guid DeploymentId { get; set; }
+        public string AiAnalysis { get; set; } = string.Empty;
+        public double SuccessProbability { get; set; }
+        public bool AnomalyDetected { get; set; }
+        public string SecurityAssessment { get; set; } = string.Empty;
+        public string OptimizationSuggestions { get; set; } = string.Empty;
+        public DateTime AnalyzedAt { get; set; }
+    }
 }

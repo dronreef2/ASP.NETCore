@@ -12,7 +12,7 @@ export default function ChatSection() {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('claude');
+  const [selectedModel, setSelectedModel] = useState('llamaindex');
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -91,24 +91,20 @@ export default function ChatSection() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h3 className="card-title">💬 Chat Inteligente</h3>
-              <p className="card-description">Converse com nossos modelos de IA</p>
+              <p className="card-description">Converse com LlamaIndex AI</p>
             </div>
 
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <select
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                style={{
-                  padding: '0.5rem',
-                  borderRadius: '8px',
-                  border: '1px solid #d1d5db',
-                  background: 'white'
-                }}
-              >
-                <option value="claude">Claude (Anthropic)</option>
-                <option value="openai">GPT (OpenAI)</option>
-                <option value="codestral">Codestral</option>
-              </select>
+              <div style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                background: '#f3f4f6',
+                color: '#374151',
+                fontSize: '0.9rem',
+                fontWeight: '500'
+              }}>
+                🔗 LlamaIndex
+              </div>
 
               <button
                 onClick={clearChat}

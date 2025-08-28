@@ -80,7 +80,7 @@ namespace TutorCopiloto.Controllers
             }
         }
 
-        [HttpPost("deploy")]
+        [HttpPost("manual-deploy")]
         public async Task<IActionResult> ManualDeploy([FromBody] ManualDeployRequest request)
         {
             try
@@ -144,22 +144,53 @@ namespace TutorCopiloto.Controllers
             }
         }
 
-        [HttpGet("deployments/{id}/logs")]
-        public async Task<IActionResult> GetDeploymentLogs(string id)
+        [HttpGet("deployments/{id}/repository-analysis")]
+        public async Task<IActionResult> GetRepositoryAnalysis(string id)
         {
             try
             {
-                var logs = await _deploymentService.GetDeploymentLogsAsync(id);
-                if (logs == null)
+                var analysis = await _deploymentService.GetRepositoryAnalysisAsync(id);
+                if (analysis == null)
                 {
-                    return NotFound();
+                    return NotFound(new { error = "Análise do repositório não encontrada" });
                 }
 
-                return Ok(new { logs });
+                return Ok(new { 
+                    repositoryAnalysis = analysis,
+                    summary = new
+                    {
+                        repositoryName = analysis.RepositoryName,
+                        totalFiles = analysis.TotalFiles,
+                        totalSize = analysis.TotalSize,
+                        programmingLanguages = analysis.ProgrammingLanguages.Count,
+                        status = analysis.Status,
+                        analyzedAt = analysis.AnalyzedAt
+                    }
+                });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao buscar logs do deployment {DeploymentId}", id);
+                _logger.LogError(ex, "Erro ao buscar análise do repositório {DeploymentId}", id);
+                return StatusCode(500, new { error = "Internal server error" });
+            }
+        }
+
+        [HttpGet("deployments/{id}/analysis")]
+        public async Task<IActionResult> GetDeploymentAnalysis(string id)
+        {
+            try
+            {
+                var analysis = await _deploymentService.GetDeploymentAnalysisAsync(id);
+                if (analysis == null)
+                {
+                    return NotFound(new { message = "Análise não encontrada para este deployment" });
+                }
+
+                return Ok(analysis);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao buscar análise do deployment {DeploymentId}", id);
                 return StatusCode(500, new { error = "Internal server error" });
             }
         }

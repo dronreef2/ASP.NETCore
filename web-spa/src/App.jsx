@@ -19,7 +19,7 @@ export default function App() {
   const renderSection = () => {
     switch (activeSection) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard onSectionChange={setActiveSection} />;
       case 'chat':
         return <ChatSection />;
       case 'chat-signalr':
@@ -43,7 +43,7 @@ export default function App() {
       case 'settings':
         return <SettingsSection />;
       default:
-        return <Dashboard />;
+        return <Dashboard onSectionChange={setActiveSection} />;
     }
   };
 

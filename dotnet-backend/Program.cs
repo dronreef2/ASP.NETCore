@@ -12,6 +12,8 @@ using TutorCopiloto.Hubs;
 using TutorCopiloto.Services;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.Extensions.Options;
+using System.Net.Http.Headers;
 
 namespace TutorCopiloto
 {
@@ -74,70 +76,31 @@ namespace TutorCopiloto
                 builder.Services.AddMemoryCache();
             }
 
-            // 3. Semantic Kernel e AI Services
-            var kernelBuilder = builder.Services.AddKernel();
-            // Configurar Claude como typed HttpClient (IClaudeChatCompletionService)
-            var aiApiKey = builder.Configuration["AI:ApiKey"];
-            if (!string.IsNullOrEmpty(aiApiKey))
+            // 3. LlamaIndex AI Service
+            builder.Services.Configure<LlamaIndexOptions>(
+                builder.Configuration.GetSection("AI:LlamaIndex"));
+
+            builder.Services.AddHttpClient<LlamaIndexService>((provider, client) =>
             {
-                // Configurar HttpClient para Claude API
-                builder.Services.AddHttpClient("Claude", client =>
-                {
-                    client.BaseAddress = new Uri("https://api.anthropic.com/");
-                    client.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
-                    client.DefaultRequestHeaders.Add("x-api-key", aiApiKey);
-                });
+                var options = provider.GetRequiredService<IOptions<LlamaIndexOptions>>().Value;
+                client.BaseAddress = new Uri(options.BaseUrl);
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", options.ApiKey);
+                client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+            });
 
-                // Registrar ClaudeChatCompletionService como implementação concreta
-                builder.Services.AddScoped<ClaudeChatCompletionService>(provider =>
-                {
-                    var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
-                    var httpClient = httpClientFactory.CreateClient("Claude");
-                    var logger = provider.GetRequiredService<ILogger<ClaudeChatCompletionService>>();
-                    var configuration = provider.GetRequiredService<IConfiguration>();
-                    
-                    return new ClaudeChatCompletionService(
-                        httpClient,
-                        aiApiKey,
-                        configuration["AI:Model"] ?? "claude-3-5-sonnet-20241022",
-                        int.Parse(configuration["AI:MaxTokens"] ?? "4096"),
-                        double.Parse(configuration["AI:Temperature"] ?? "0.7"),
-                        logger);
-                });
-
-                // Registrar interfaces usando a implementação concreta
-                builder.Services.AddScoped<IClaudeChatCompletionService>(provider =>
-                    provider.GetRequiredService<ClaudeChatCompletionService>());
-
-                builder.Services.AddScoped<IChatCompletionAdapter>(provider =>
-                    provider.GetRequiredService<ClaudeChatCompletionService>());
-
-                // Registrar como IChatCompletionService para Semantic Kernel
-                builder.Services.AddScoped<Microsoft.SemanticKernel.ChatCompletion.IChatCompletionService>(
-                    provider => provider.GetRequiredService<ClaudeChatCompletionService>());
-
-                // Registrar ClaudeService
-                builder.Services.AddScoped<IClaudeService, ClaudeService>();
-            }
-            else
-            {
-                // Fallback: usar mock service para demonstração
-                builder.Services.AddSingleton<MockChatCompletionService>();
-                
-                builder.Services.AddSingleton<Microsoft.SemanticKernel.ChatCompletion.IChatCompletionService>(
-                    provider => provider.GetRequiredService<MockChatCompletionService>());
-                
-                builder.Services.AddSingleton<IChatCompletionAdapter>(
-                    provider => provider.GetRequiredService<MockChatCompletionService>());
-            }
+            builder.Services.AddScoped<LlamaIndexService>();
 
             // 4. Injeção de Dependência - Serviços customizados
             builder.Services.AddScoped<IRelatorioService, RelatorioService>();
             builder.Services.AddScoped<IDeploymentService, DeploymentService>();
+            builder.Services.AddScoped<IRepositoryAnalysisService, RepositoryAnalysisService>();
             builder.Services.AddScoped<IIntelligentAnalysisService, IntelligentAnalysisService>();
             builder.Services.AddScoped<IOnnxInferenceService, OnnxInferenceService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IGitService, GitService>();
+            builder.Services.AddScoped<IGitHubChatIntegrationService, GitHubChatIntegrationService>();
+            builder.Services.AddScoped<GitHubMcpService>();
             builder.Services.AddSingleton<INgrokTunnelService, NgrokTunnelService>();
             builder.Services.AddHostedService<NgrokTunnelService>(provider => 
                 (NgrokTunnelService)provider.GetRequiredService<INgrokTunnelService>());

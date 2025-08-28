@@ -18,16 +18,16 @@ namespace TutorCopiloto.Services
     {
         private readonly ILogger<IntelligentAnalysisService> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IChatCompletionAdapter _chatCompletionAdapter;
+        private readonly LlamaIndexService _llamaIndexService;
         private readonly Kernel _kernel;
 
         public IntelligentAnalysisService(
             IConfiguration configuration,
-            IChatCompletionAdapter chatCompletionAdapter,
+            LlamaIndexService llamaIndexService,
             ILogger<IntelligentAnalysisService> logger)
         {
             _configuration = configuration;
-            _chatCompletionAdapter = chatCompletionAdapter;
+            _llamaIndexService = llamaIndexService;
             _logger = logger;
 
             // Simplificar inicialização sem plugins por enquanto
@@ -36,7 +36,7 @@ namespace TutorCopiloto.Services
             // Mantemos o kernel limpo e usamos o adapter dentro dos serviços.
             _kernel = builder.Build();
 
-            _logger.LogInformation("IntelligentAnalysisService inicializado com serviço de IA configurado");
+            _logger.LogInformation("IntelligentAnalysisService inicializado com LlamaIndex");
         }
 
         public async Task<LogAnalysisResult> AnalyzeDeploymentLogsAsync(string deploymentId, string logs)
@@ -61,7 +61,7 @@ Por favor, forneça:
 
 Responda em formato JSON estruturado.";
 
-                var aiText = await _chatCompletionAdapter.GetChatResponseAsync(prompt);
+                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, deploymentId);
                 var aiResponse = new { Content = aiText };
 
                 // Tentar desserializar a resposta da IA para um DTO estruturado
@@ -131,7 +131,7 @@ Identifique:
 4. Recomendações de otimização
 5. Ferramentas sugeridas";
 
-                var aiText = await _chatCompletionAdapter.GetChatResponseAsync(prompt);
+                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, "performance-analysis");
                 var aiResponse = new { Content = aiText };
 
                 return new PerformanceInsight
@@ -177,7 +177,7 @@ Inclua:
 
 Formato: Relatório técnico conciso";
 
-                var aiText = await _chatCompletionAdapter.GetChatResponseAsync(prompt);
+                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, deploymentId);
                 return aiText ?? "Resumo não disponível";
             }
             catch (Exception ex)
@@ -203,7 +203,7 @@ Inclua:
 
 Formato: Resumo executivo profissional";
 
-                var aiText = await _chatCompletionAdapter.GetChatResponseAsync(prompt);
+                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, deploymentId);
                 return aiText ?? "Resumo não disponível";
             }
             catch (Exception ex)
@@ -229,7 +229,7 @@ Identifique:
 4. Recomendações de correção
 5. Questões de compliance";
 
-                var aiText = await _chatCompletionAdapter.GetChatResponseAsync(prompt);
+                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, "security-analysis");
                 var aiResponse = new { Content = aiText };
 
                 return new SecurityAnalysisResult
@@ -273,7 +273,7 @@ Detecte:
 4. Comportamentos suspeitos
 5. Sugestões de otimização";
 
-                var aiText = await _chatCompletionAdapter.GetChatResponseAsync(prompt);
+                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, "anomaly-detection");
                 var aiResponse = new { Content = aiText };
 
                 return new AnomalyDetectionResult
@@ -316,7 +316,7 @@ Forneça recomendações específicas para:
 4. Segurança
 5. Performance";
 
-                var aiText = await _chatCompletionAdapter.GetChatResponseAsync(prompt);
+                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, "deployment-recommendations");
                 var aiResponse = new { Content = aiText };
 
                 return new DeploymentRecommendations

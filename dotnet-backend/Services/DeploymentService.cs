@@ -10,6 +10,12 @@ namespace TutorCopiloto.Services
         Task<string?> GetDeploymentLogsAsync(string id);
         Task UpdateDeploymentStatusAsync(string id, DeploymentStatus status, string? message = null);
         
+        // Novo método para acessar análises automáticas
+        Task<DeploymentAnalysis?> GetDeploymentAnalysisAsync(string deploymentId);
+        
+        // Novo método para acessar análises de repositório
+        Task<RepositoryAnalysis?> GetRepositoryAnalysisAsync(string deploymentId);
+        
         // Métodos síncronos para compatibilidade
         List<Deployment> GetDeployments();
         Deployment? GetDeployment(string id);
@@ -20,16 +26,27 @@ namespace TutorCopiloto.Services
     {
         private readonly ILogger<DeploymentService> _logger;
         private readonly IConfiguration _configuration;
+        private readonly IIntelligentAnalysisService _intelligentAnalysis;
+        private readonly IOnnxInferenceService _onnxInference;
+        private readonly IRepositoryAnalysisService _repositoryAnalysis;
         private readonly Dictionary<string, Deployment> _deployments = new();
         private readonly Dictionary<string, List<string>> _deploymentLogs = new();
+        private readonly Dictionary<string, DeploymentAnalysis> _deploymentAnalyses = new();
+        private readonly Dictionary<string, RepositoryAnalysis> _repositoryAnalyses = new();
 
-        public DeploymentService(ILogger<DeploymentService> logger, IConfiguration configuration)
+        public DeploymentService(
+            ILogger<DeploymentService> logger, 
+            IConfiguration configuration,
+            IIntelligentAnalysisService intelligentAnalysis,
+            IOnnxInferenceService onnxInference,
+            IRepositoryAnalysisService repositoryAnalysis)
         {
             _logger = logger;
             _configuration = configuration;
-        }
-
-        public async Task<Deployment> CreateDeploymentAsync(DeploymentRequest request)
+            _intelligentAnalysis = intelligentAnalysis;
+            _onnxInference = onnxInference;
+            _repositoryAnalysis = repositoryAnalysis;
+        }        public async Task<Deployment> CreateDeploymentAsync(DeploymentRequest request)
         {
             var deployment = new Deployment
             {
@@ -111,6 +128,18 @@ namespace TutorCopiloto.Services
             }
         }
 
+        public async Task<DeploymentAnalysis?> GetDeploymentAnalysisAsync(string deploymentId)
+        {
+            await Task.CompletedTask;
+            return _deploymentAnalyses.TryGetValue(deploymentId, out var analysis) ? analysis : null;
+        }
+
+        public async Task<RepositoryAnalysis?> GetRepositoryAnalysisAsync(string deploymentId)
+        {
+            await Task.CompletedTask;
+            return _repositoryAnalyses.TryGetValue(deploymentId, out var analysis) ? analysis : null;
+        }
+
         private async Task ProcessDeploymentAsync(Deployment deployment)
         {
             try
@@ -126,8 +155,14 @@ namespace TutorCopiloto.Services
                     AddLog(deployment.Id, $"📋 Commit: {deployment.CommitSha[..8]}...");
                 }
 
+                // ✅ Análise REAL do repositório
+                await PerformRepositoryAnalysis(deployment);
+
                 // Simula processo de deploy
                 await SimulateDeploymentProcess(deployment);
+
+                // ✅ Análise automática com IA e ONNX
+                await PerformAutomaticAnalysis(deployment);
                 
                 await UpdateDeploymentStatusAsync(deployment.Id, DeploymentStatus.Success);
             }
@@ -135,6 +170,139 @@ namespace TutorCopiloto.Services
             {
                 _logger.LogError(ex, "Erro durante deployment {DeploymentId}", deployment.Id);
                 await UpdateDeploymentStatusAsync(deployment.Id, DeploymentStatus.Failed, ex.Message);
+            }
+        }
+
+        private async Task PerformRepositoryAnalysis(Deployment deployment)
+        {
+            try
+            {
+                AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 📊 Iniciando análise REAL do repositório...");
+
+                // Analisar o repositório usando o serviço dedicado
+                var repositoryAnalysis = await _repositoryAnalysis.AnalyzeRepositoryAsync(
+                    deployment.RepositoryUrl, 
+                    deployment.Branch);
+
+                // Armazenar análise do repositório
+                _repositoryAnalyses[deployment.Id] = repositoryAnalysis;
+
+                // Log dos resultados da análise
+                AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 📁 Repositório: {repositoryAnalysis.RepositoryName}");
+                AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 📊 Arquivos encontrados: {repositoryAnalysis.TotalFiles}");
+                AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 💾 Tamanho total: {FormatFileSize(repositoryAnalysis.TotalSize)}");
+
+                if (repositoryAnalysis.ProgrammingLanguages.Any())
+                {
+                    var languages = string.Join(", ", repositoryAnalysis.ProgrammingLanguages.Select(l => $"{l.Name} ({l.FileCount})"));
+                    AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 💻 Linguagens: {languages}");
+                }
+
+                if (repositoryAnalysis.ConfigurationFiles.Any())
+                {
+                    var configs = string.Join(", ", repositoryAnalysis.ConfigurationFiles.Select(c => c.FileName));
+                    AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] ⚙️ Configurações: {configs}");
+                }
+
+                if (repositoryAnalysis.ImportantFiles.Any())
+                {
+                    var important = string.Join(", ", repositoryAnalysis.ImportantFiles.Select(f => f.FileName));
+                    AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 📄 Arquivos importantes: {important}");
+                }
+
+                // Verificar se há README
+                var readme = repositoryAnalysis.ImportantFiles.FirstOrDefault(f => 
+                    f.FileName.ToLower().Contains("readme"));
+                if (readme != null)
+                {
+                    AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 📖 README encontrado - analisando conteúdo...");
+                    
+                    // Aqui poderia fazer uma análise mais profunda do README
+                    if (readme.Content.Contains("## Installation") || readme.Content.Contains("## Instalação"))
+                    {
+                        AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 📦 Instruções de instalação encontradas");
+                    }
+                    
+                    if (readme.Content.Contains("## Usage") || readme.Content.Contains("## Uso"))
+                    {
+                        AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 🚀 Instruções de uso encontradas");
+                    }
+                }
+
+                AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] ✅ Análise do repositório concluída!");
+                _logger.LogInformation("Análise do repositório concluída para {RepositoryUrl}", deployment.RepositoryUrl);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Análise do repositório falhou para {RepositoryUrl}, continuando...", deployment.RepositoryUrl);
+                AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] ⚠️ Análise do repositório falhou: {ex.Message}");
+            }
+        }
+
+        private async Task PerformAutomaticAnalysis(Deployment deployment)
+        {
+            try
+            {
+                AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 🧠 Iniciando análise automática com IA...");
+
+                // 1. Extrair logs atuais
+                var logsText = string.Join("\n", _deploymentLogs[deployment.Id]);
+
+                // 2. Análise de logs com IA conversacional
+                var aiAnalysis = await _intelligentAnalysis.AnalyzeDeploymentLogsAsync(deployment.Id, logsText);
+                AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 📊 Análise IA concluída - Status: {aiAnalysis.Status}");
+
+                // 3. Predição com modelos ONNX
+                var features = ExtractDeploymentFeatures(deployment, logsText);
+                var prediction = await _onnxInference.PredictDeploymentOutcomeAsync(features);
+                AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 🎯 Predição ONNX: {prediction.SuccessProbability:P0} probabilidade de sucesso");
+
+                // 4. Detecção de anomalias (dados históricos)
+                var historicalMetrics = GetHistoricalMetrics();
+                AnomalyDetectionResult? anomalyResult = null;
+                if (historicalMetrics.Any())
+                {
+                    anomalyResult = await _onnxInference.DetectAnomaliesAsync(historicalMetrics);
+                    AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 🔍 Anomalias detectadas: {anomalyResult.Anomalies.Count}");
+                }
+
+                // 5. Análise de segurança
+                var securityFeatures = ExtractSecurityFeatures(logsText);
+                var securityAssessment = await _onnxInference.AssessSecurityThreatsAsync(securityFeatures);
+                AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 🔒 Análise de segurança: {securityAssessment.Threats.Count} ameaças encontradas");
+
+                // 6. Armazenar análise completa
+                var analysis = new DeploymentAnalysis
+                {
+                    DeploymentId = Guid.Parse(deployment.Id),
+                    AiAnalysis = aiAnalysis.AiInsights,
+                    SuccessProbability = prediction.SuccessProbability,
+                    AnomalyDetected = anomalyResult?.Anomalies.Any() ?? false,
+                    SecurityAssessment = string.Join(", ", securityAssessment.Threats.Select(t => t.Description)),
+                    OptimizationSuggestions = string.Join(", ", aiAnalysis.Recommendations.Concat(prediction.Recommendations)),
+                    AnalyzedAt = DateTime.UtcNow
+                };
+
+                _deploymentAnalyses[deployment.Id] = analysis;
+
+                // 7. Log das recomendações principais
+                var recommendations = aiAnalysis.Recommendations.Concat(prediction.Recommendations).ToList();
+                if (recommendations.Any())
+                {
+                    AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] 💡 Principais recomendações:");
+                    foreach (var rec in recommendations.Take(3))
+                    {
+                        AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}]   • {rec}");
+                    }
+                }
+
+                AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] ✅ Análise automática concluída!");
+                _logger.LogInformation("Análise automática concluída para deployment {DeploymentId}", deployment.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Análise automática falhou para deployment {DeploymentId}, continuando...", deployment.Id);
+                AddLog(deployment.Id, $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] ⚠️ Análise automática falhou: {ex.Message}");
             }
         }
 
@@ -205,6 +373,121 @@ namespace TutorCopiloto.Services
                        log.Contains("WARN") ? LogLevel.Warning : 
                        LogLevel.Information
             }).ToList();
+        }
+
+        // Métodos auxiliares para análise automática
+        private DeploymentFeatures ExtractDeploymentFeatures(Deployment deployment, string logs)
+        {
+            return new DeploymentFeatures
+            {
+                RepositorySize = Random.Shared.Next(100, 2000), // Simulado - em produção seria calculado
+                Dependencies = ExtractDependencies(logs),
+                HasTests = logs.Contains("test") || logs.Contains("spec"),
+                HasDockerfile = logs.Contains("docker") || logs.Contains("Dockerfile"),
+                PreviousFailures = GetPreviousFailures(deployment.RepositoryUrl),
+                LastSuccessfulDeploymentDays = GetDaysSinceLastSuccess(deployment.RepositoryUrl)
+            };
+        }
+
+        private List<string> ExtractDependencies(string logs)
+        {
+            var dependencies = new List<string>();
+            // Simulação - em produção seria extraído dos logs reais
+            if (logs.Contains("npm")) dependencies.AddRange(new[] { "react", "typescript", "vite" });
+            if (logs.Contains("dotnet")) dependencies.AddRange(new[] { "asp.net", "entity-framework" });
+            return dependencies;
+        }
+
+        private int GetPreviousFailures(string repositoryUrl)
+        {
+            // Simulação - em produção seria consultado do banco
+            return Random.Shared.Next(0, 3);
+        }
+
+        private int GetDaysSinceLastSuccess(string repositoryUrl)
+        {
+            // Simulação - em produção seria calculado baseado em dados históricos
+            return Random.Shared.Next(1, 30);
+        }
+
+        private List<DeploymentMetrics> GetHistoricalMetrics()
+        {
+            // Simulação - em produção seria carregado do banco de dados
+            return _deployments.Values
+                .Where(d => d.Status == DeploymentStatus.Success)
+                .Take(10)
+                .Select(d => new DeploymentMetrics
+                {
+                    Timestamp = d.CreatedAt,
+                    DeploymentDuration = d.Duration ?? TimeSpan.FromMinutes(5),
+                    CpuUsage = Random.Shared.NextDouble() * 100,
+                    MemoryUsage = Random.Shared.NextDouble() * 100,
+                    DiskUsage = Random.Shared.NextDouble() * 100,
+                    Success = true
+                })
+                .ToList();
+        }
+
+        private SecurityFeatures ExtractSecurityFeatures(string logs)
+        {
+            return new SecurityFeatures
+            {
+                ExposedPorts = ExtractExposedPorts(logs),
+                HasHttpEndpoints = logs.Contains("http://") || logs.Contains("GET") || logs.Contains("POST"),
+                HasStrongAuthentication = logs.Contains("authentication") || logs.Contains("jwt") || logs.Contains("oauth"),
+                HasEncryption = logs.Contains("https://") || logs.Contains("ssl") || logs.Contains("tls"),
+                InstalledPackages = ExtractPackages(logs)
+            };
+        }
+
+        private List<int> ExtractExposedPorts(string logs)
+        {
+            var ports = new List<int>();
+            var portMatches = System.Text.RegularExpressions.Regex.Matches(logs, @"port\s+(\d+)");
+
+            foreach (System.Text.RegularExpressions.Match match in portMatches)
+            {
+                if (int.TryParse(match.Groups[1].Value, out int port))
+                {
+                    ports.Add(port);
+                }
+            }
+
+            // Adicionar portas comuns se não encontradas
+            if (!ports.Any())
+            {
+                ports.AddRange(new[] { 80, 443, 5000, 8080 });
+            }
+
+            return ports.Distinct().ToList();
+        }
+
+        private List<string> ExtractPackages(string logs)
+        {
+            var packages = new List<string>();
+            var packageMatches = System.Text.RegularExpressions.Regex.Matches(logs, @"Installing\s+([a-zA-Z0-9\.\-_]+)");
+
+            foreach (System.Text.RegularExpressions.Match match in packageMatches)
+            {
+                packages.Add(match.Groups[1].Value);
+            }
+
+            return packages.Distinct().ToList();
+        }
+
+        private string FormatFileSize(long bytes)
+        {
+            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+            int order = 0;
+            double size = bytes;
+            
+            while (size >= 1024 && order < sizes.Length - 1)
+            {
+                order++;
+                size /= 1024;
+            }
+            
+            return $"{size:0.##} {sizes[order]}";
         }
     }
 

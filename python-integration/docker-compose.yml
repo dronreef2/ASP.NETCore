@@ -1,0 +1,48 @@
+# Docker Compose para a integração completa
+version: '3.8'
+
+services:
+  tutor-copiloto-dotnet:
+    build:
+      context: ../dotnet-backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+    volumes:
+      - ../dotnet-backend/logs:/app/logs
+    depends_on:
+      - redis
+    networks:
+      - tutor-copiloto-network
+
+  tutor-copiloto-github-integration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - GITHUB_API_KEY=${GITHUB_API_KEY}
+      - MCP_SERVER_HOST=0.0.0.0
+      - MCP_SERVER_PORT=8001
+    networks:
+      - tutor-copiloto-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - tutor-copiloto-network
+
+networks:
+  tutor-copiloto-network:
+    driver: bridge
+
+volumes:
+  redis_data:

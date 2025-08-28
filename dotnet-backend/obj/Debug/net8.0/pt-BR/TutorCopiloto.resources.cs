@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TutorCopiloto")]
 [assembly: System.Reflection.AssemblyCopyrightAttribute(" ")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b553796b98963633c011c03f9d9f91e852c88643")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+212fbd422b99570a531a06e57bbf68356a54865f")]
 [assembly: System.Reflection.AssemblyProductAttribute("TutorCopiloto")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TutorCopiloto")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
