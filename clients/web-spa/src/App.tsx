@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Sidebar } from './components/Sidebar';
-import { ChatInterface } from './components/ChatInterface';
-import { CodeAnalyzer } from './components/CodeAnalyzer';
-import { AssessmentPanel } from './components/AssessmentPanel';
-import { SettingsPanel } from './components/SettingsPanel';
-import { Header } from './components/Header';
+import {
+  Sidebar,
+  ChatInterface,
+  CodeAnalyzer,
+  AssessmentPanel,
+  SettingsPanel,
+  DeploymentPanel,
+  Header
+} from './components';
 
 function App() {
   const [activeTab, setActiveTab] = useState('chat');
@@ -32,6 +35,7 @@ function App() {
             <Route path="/" element={
               <div className="h-full">
                 {activeTab === 'chat' && <ChatInterface />}
+                {activeTab === 'deployments' && <DeploymentPanel />}
                 {activeTab === 'analyzer' && <CodeAnalyzer />}
                 {activeTab === 'assessment' && <AssessmentPanel />}
                 {activeTab === 'settings' && <SettingsPanel />}
