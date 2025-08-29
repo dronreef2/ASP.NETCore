@@ -5,14 +5,17 @@ namespace TutorCopiloto.Services
 {
     public interface IGitService
     {
-        Task<GitCloneResult> CloneRepositoryAsync(string repositoryUrl, string targetDirectory, string? branch = null);
+        Task<GitCloneResult> CloneRepositoryAsync(string repositoryUrl, string t
+argetDirectory, string? branch = null);
         Task<GitPullResult> PullRepositoryAsync(string repositoryPath);
         Task<GitStatusResult> GetRepositoryStatusAsync(string repositoryPath);
-        Task<GitLogResult> GetRepositoryLogAsync(string repositoryPath, int maxEntries = 10);
+        Task<GitLogResult> GetRepositoryLogAsync(string repositoryPath, int maxE
+ntries = 10);
         Task<bool> IsValidRepositoryAsync(string repositoryPath);
         Task<string> GetCurrentBranchAsync(string repositoryPath);
         Task<List<string>> GetBranchesAsync(string repositoryPath);
-        Task<GitCheckoutResult> CheckoutBranchAsync(string repositoryPath, string branch);
+        Task<GitCheckoutResult> CheckoutBranchAsync(string repositoryPath, strin
+g branch);
     }
 
     public class GitService : IGitService
@@ -24,13 +27,16 @@ namespace TutorCopiloto.Services
             _logger = logger;
         }
 
-        public async Task<GitCloneResult> CloneRepositoryAsync(string repositoryUrl, string targetDirectory, string? branch = null)
+        public async Task<GitCloneResult> CloneRepositoryAsync(string repository
+Url, string targetDirectory, string? branch = null)
         {
             try
             {
-                _logger.LogInformation("Clonando repositório: {RepositoryUrl} para {TargetDirectory}", repositoryUrl, targetDirectory);
+                _logger.LogInformation("Clonando repositório: {RepositoryUrl} pa
+ra {TargetDirectory}", repositoryUrl, targetDirectory);
 
-                var arguments = $"clone \"{repositoryUrl}\" \"{targetDirectory}\"";
+                var arguments = $"clone \"{repositoryUrl}\" \"{targetDirectory}\
+"";
                 if (!string.IsNullOrEmpty(branch))
                 {
                     arguments += $" --branch {branch}";
@@ -40,7 +46,8 @@ namespace TutorCopiloto.Services
 
                 if (result.Success)
                 {
-                    _logger.LogInformation("Repositório clonado com sucesso: {RepositoryUrl}", repositoryUrl);
+                    _logger.LogInformation("Repositório clonado com sucesso: {Re
+positoryUrl}", repositoryUrl);
                     return new GitCloneResult
                     {
                         Success = true,
@@ -50,7 +57,8 @@ namespace TutorCopiloto.Services
                 }
                 else
                 {
-                    _logger.LogError("Falha ao clonar repositório: {Error}", result.Error);
+                    _logger.LogError("Falha ao clonar repositório: {Error}", res
+ult.Error);
                     return new GitCloneResult
                     {
                         Success = false,
@@ -61,7 +69,8 @@ namespace TutorCopiloto.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao clonar repositório: {RepositoryUrl}", repositoryUrl);
+                _logger.LogError(ex, "Erro ao clonar repositório: {RepositoryUrl
+}", repositoryUrl);
                 return new GitCloneResult
                 {
                     Success = false,
@@ -71,7 +80,8 @@ namespace TutorCopiloto.Services
             }
         }
 
-        public async Task<GitPullResult> PullRepositoryAsync(string repositoryPath)
+        public async Task<GitPullResult> PullRepositoryAsync(string repositoryPa
+th)
         {
             try
             {
@@ -85,13 +95,16 @@ namespace TutorCopiloto.Services
                     };
                 }
 
-                _logger.LogInformation("Executando git pull em: {RepositoryPath}", repositoryPath);
+                _logger.LogInformation("Executando git pull em: {RepositoryPath}
+", repositoryPath);
 
-                var result = await ExecuteGitCommandAsync("pull --no-edit", repositoryPath);
+                var result = await ExecuteGitCommandAsync("pull --no-edit", repo
+sitoryPath);
 
                 if (result.Success)
                 {
-                    _logger.LogInformation("Git pull executado com sucesso em: {RepositoryPath}", repositoryPath);
+                    _logger.LogInformation("Git pull executado com sucesso em: {
+RepositoryPath}", repositoryPath);
                     return new GitPullResult
                     {
                         Success = true,
@@ -101,7 +114,8 @@ namespace TutorCopiloto.Services
                 }
                 else
                 {
-                    _logger.LogWarning("Git pull com conflitos ou erros em: {RepositoryPath}. Error: {Error}", repositoryPath, result.Error);
+                    _logger.LogWarning("Git pull com conflitos ou erros em: {Rep
+ositoryPath}. Error: {Error}", repositoryPath, result.Error);
                     return new GitPullResult
                     {
                         Success = false,
@@ -113,7 +127,8 @@ namespace TutorCopiloto.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao executar git pull em: {RepositoryPath}", repositoryPath);
+                _logger.LogError(ex, "Erro ao executar git pull em: {RepositoryP
+ath}", repositoryPath);
                 return new GitPullResult
                 {
                     Success = false,
@@ -123,7 +138,8 @@ namespace TutorCopiloto.Services
             }
         }
 
-        public async Task<GitStatusResult> GetRepositoryStatusAsync(string repositoryPath)
+        public async Task<GitStatusResult> GetRepositoryStatusAsync(string repos
+itoryPath)
         {
             try
             {
@@ -137,11 +153,13 @@ namespace TutorCopiloto.Services
                     };
                 }
 
-                var result = await ExecuteGitCommandAsync("status --porcelain", repositoryPath);
+                var result = await ExecuteGitCommandAsync("status --porcelain",
+repositoryPath);
 
                 if (result.Success)
                 {
-                    var statusLines = result.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                    var statusLines = result.Output.Split('\n', StringSplitOptio
+ns.RemoveEmptyEntries);
                     var modifiedFiles = new List<string>();
                     var untrackedFiles = new List<string>();
                     var stagedFiles = new List<string>();
@@ -153,7 +171,8 @@ namespace TutorCopiloto.Services
                         var status = line.Substring(0, 2);
                         var filePath = line.Substring(3);
 
-                        if (status.Contains('M') || status.Contains('A') || status.Contains('D'))
+                        if (status.Contains('M') || status.Contains('A') || stat
+us.Contains('D'))
                         {
                             stagedFiles.Add(filePath);
                         }
@@ -174,7 +193,8 @@ namespace TutorCopiloto.Services
                         ModifiedFiles = modifiedFiles,
                         UntrackedFiles = untrackedFiles,
                         StagedFiles = stagedFiles,
-                        Message = statusLines.Length == 0 ? "Repositório limpo" : $"{statusLines.Length} arquivo(s) modificado(s)"
+                        Message = statusLines.Length == 0 ? "Repositório limpo"
+: $"{statusLines.Length} arquivo(s) modificado(s)"
                     };
                 }
                 else
@@ -189,7 +209,8 @@ namespace TutorCopiloto.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao obter status do repositório: {RepositoryPath}", repositoryPath);
+                _logger.LogError(ex, "Erro ao obter status do repositório: {Repo
+sitoryPath}", repositoryPath);
                 return new GitStatusResult
                 {
                     Success = false,
@@ -199,7 +220,8 @@ namespace TutorCopiloto.Services
             }
         }
 
-        public async Task<GitLogResult> GetRepositoryLogAsync(string repositoryPath, int maxEntries = 10)
+        public async Task<GitLogResult> GetRepositoryLogAsync(string repositoryP
+ath, int maxEntries = 10)
         {
             try
             {
@@ -216,12 +238,14 @@ namespace TutorCopiloto.Services
                 var format = "--pretty=format:%H|%an|%ae|%ad|%s";
                 var arguments = $"log {format} --date=short -n {maxEntries}";
 
-                var result = await ExecuteGitCommandAsync(arguments, repositoryPath);
+                var result = await ExecuteGitCommandAsync(arguments, repositoryP
+ath);
 
                 if (result.Success)
                 {
                     var commits = new List<GitCommit>();
-                    var lines = result.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                    var lines = result.Output.Split('\n', StringSplitOptions.Rem
+oveEmptyEntries);
 
                     foreach (var line in lines)
                     {
@@ -258,7 +282,8 @@ namespace TutorCopiloto.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao obter log do repositório: {RepositoryPath}", repositoryPath);
+                _logger.LogError(ex, "Erro ao obter log do repositório: {Reposit
+oryPath}", repositoryPath);
                 return new GitLogResult
                 {
                     Success = false,
@@ -272,7 +297,8 @@ namespace TutorCopiloto.Services
         {
             try
             {
-                var result = await ExecuteGitCommandAsync("rev-parse --git-dir", repositoryPath);
+                var result = await ExecuteGitCommandAsync("rev-parse --git-dir",
+ repositoryPath);
                 return result.Success;
             }
             catch
@@ -290,12 +316,14 @@ namespace TutorCopiloto.Services
                     return string.Empty;
                 }
 
-                var result = await ExecuteGitCommandAsync("rev-parse --abbrev-ref HEAD", repositoryPath);
+                var result = await ExecuteGitCommandAsync("rev-parse --abbrev-re
+f HEAD", repositoryPath);
                 return result.Success ? result.Output.Trim() : string.Empty;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao obter branch atual: {RepositoryPath}", repositoryPath);
+                _logger.LogError(ex, "Erro ao obter branch atual: {RepositoryPat
+h}", repositoryPath);
                 return string.Empty;
             }
         }
@@ -309,14 +337,16 @@ namespace TutorCopiloto.Services
                     return new List<string>();
                 }
 
-                var result = await ExecuteGitCommandAsync("branch -a", repositoryPath);
+                var result = await ExecuteGitCommandAsync("branch -a", repositor
+yPath);
                 if (!result.Success)
                 {
                     return new List<string>();
                 }
 
                 var branches = new List<string>();
-                var lines = result.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                var lines = result.Output.Split('\n', StringSplitOptions.RemoveE
+mptyEntries);
 
                 foreach (var line in lines)
                 {
@@ -332,12 +362,14 @@ namespace TutorCopiloto.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao obter branches: {RepositoryPath}", repositoryPath);
+                _logger.LogError(ex, "Erro ao obter branches: {RepositoryPath}",
+ repositoryPath);
                 return new List<string>();
             }
         }
 
-        public async Task<GitCheckoutResult> CheckoutBranchAsync(string repositoryPath, string branch)
+        public async Task<GitCheckoutResult> CheckoutBranchAsync(string reposito
+ryPath, string branch)
         {
             try
             {
@@ -351,7 +383,8 @@ namespace TutorCopiloto.Services
                     };
                 }
 
-                var result = await ExecuteGitCommandAsync($"checkout {branch}", repositoryPath);
+                var result = await ExecuteGitCommandAsync($"checkout {branch}",
+repositoryPath);
 
                 if (result.Success)
                 {
@@ -374,7 +407,8 @@ namespace TutorCopiloto.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao fazer checkout: {RepositoryPath}, Branch: {Branch}", repositoryPath, branch);
+                _logger.LogError(ex, "Erro ao fazer checkout: {RepositoryPath},
+Branch: {Branch}", repositoryPath, branch);
                 return new GitCheckoutResult
                 {
                     Success = false,
@@ -384,7 +418,8 @@ namespace TutorCopiloto.Services
             }
         }
 
-        private async Task<GitCommandResult> ExecuteGitCommandAsync(string arguments, string? workingDirectory)
+        private async Task<GitCommandResult> ExecuteGitCommandAsync(string argum
+ents, string? workingDirectory)
         {
             try
             {
@@ -426,7 +461,8 @@ namespace TutorCopiloto.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao executar comando git: {Arguments}", arguments);
+                _logger.LogError(ex, "Erro ao executar comando git: {Arguments}"
+, arguments);
                 return new GitCommandResult
                 {
                     Success = false,

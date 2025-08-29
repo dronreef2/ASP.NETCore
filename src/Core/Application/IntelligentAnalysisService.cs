@@ -1,17 +1,23 @@
 using Microsoft.SemanticKernel;
 using System.ComponentModel;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace TutorCopiloto.Services
 {
     public interface IIntelligentAnalysisService
     {
-        Task<LogAnalysisResult> AnalyzeDeploymentLogsAsync(string deploymentId, string logs);
+        Task<LogAnalysisResult> AnalyzeDeploymentLogsAsync(string deploymentId,
+string logs);
         Task<PerformanceInsight> AnalyzePerformanceAsync(string logs);
-        Task<string> GenerateExecutiveSummaryAsync(string deploymentId, int days);
-        Task<string> GenerateDeploymentSummaryAsync(string deploymentId, string logs);
+        Task<string> GenerateExecutiveSummaryAsync(string deploymentId, int days
+);
+        Task<string> GenerateDeploymentSummaryAsync(string deploymentId, string
+logs);
         Task<SecurityAnalysisResult> AnalyzeSecurityAsync(string logs);
         Task<AnomalyDetectionResult> DetectAnomaliesAsync(string logs);
-        Task<DeploymentRecommendations> GetDeploymentRecommendationsAsync(string repositoryUrl, string logs);
+        Task<DeploymentRecommendations> GetDeploymentRecommendationsAsync(string
+ repositoryUrl, string logs);
     }
 
     public class IntelligentAnalysisService : IIntelligentAnalysisService
@@ -32,18 +38,22 @@ namespace TutorCopiloto.Services
 
             // Simplificar inicialização sem plugins por enquanto
             var builder = Kernel.CreateBuilder();
-            // Não registramos diretamente o adapter no kernel para evitar dependências fortes em SDKs externos.
+            // Não registramos diretamente o adapter no kernel para evitar depen
+dências fortes em SDKs externos.
             // Mantemos o kernel limpo e usamos o adapter dentro dos serviços.
             _kernel = builder.Build();
 
-            _logger.LogInformation("IntelligentAnalysisService inicializado com LlamaIndex");
+            _logger.LogInformation("IntelligentAnalysisService inicializado com
+LlamaIndex");
         }
 
-        public async Task<LogAnalysisResult> AnalyzeDeploymentLogsAsync(string deploymentId, string logs)
+        public async Task<LogAnalysisResult> AnalyzeDeploymentLogsAsync(string d
+eploymentId, string logs)
         {
             try
             {
-                _logger.LogInformation("Analisando logs do deployment {DeploymentId} com IA", deploymentId);
+                _logger.LogInformation("Analisando logs do deployment {Deploymen
+tId} com IA", deploymentId);
 
                 var prompt = $@"
 Analise os seguintes logs de deployment e forneça insights:
@@ -61,16 +71,19 @@ Por favor, forneça:
 
 Responda em formato JSON estruturado.";
 
-                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, deploymentId);
+                var aiText = await _llamaIndexService.GetChatResponseAsync(promp
+t, deploymentId);
                 var aiResponse = new { Content = aiText };
 
                 // Tentar desserializar a resposta da IA para um DTO estruturado
-                TutorCopiloto.Services.Dto.IntelligentAnalysisResponseDto? dto = null;
+                TutorCopiloto.Services.Dto.IntelligentAnalysisResponseDto? dto =
+ null;
                 if (!string.IsNullOrEmpty(aiResponse?.Content))
                 {
                     try
                     {
-                        dto = System.Text.Json.JsonSerializer.Deserialize<TutorCopiloto.Services.Dto.IntelligentAnalysisResponseDto>(
+                        dto = System.Text.Json.JsonSerializer.Deserialize<TutorC
+opiloto.Services.Dto.IntelligentAnalysisResponseDto>(
                             aiResponse.Content,
                             new System.Text.Json.JsonSerializerOptions
                             {
@@ -79,7 +92,8 @@ Responda em formato JSON estruturado.";
                     }
                     catch (System.Text.Json.JsonException jex)
                     {
-                        _logger.LogWarning(jex, "Resposta da IA não estava em JSON válido: usando heurística fallback");
+                        _logger.LogWarning(jex, "Resposta da IA não estava em JS
+ON válido: usando heurística fallback");
                     }
                 }
 
@@ -87,27 +101,35 @@ Responda em formato JSON estruturado.";
                 {
                     DeploymentId = deploymentId,
                     Status = dto?.Status ?? "Analisado",
-                    Issues = dto?.Issues ?? ExtractIssues(logs, aiResponse?.Content ?? ""),
-                    Recommendations = dto?.Recommendations ?? ExtractRecommendations(aiResponse?.Content ?? ""),
+                    Issues = dto?.Issues ?? ExtractIssues(logs, aiResponse?.Cont
+ent ?? ""),
+                    Recommendations = dto?.Recommendations ?? ExtractRecommendat
+ions(aiResponse?.Content ?? ""),
                     Severity = dto?.Severity ?? DetermineSeverity(logs),
-                    EstimatedResolutionTime = dto?.EstimatedResolutionMinutes.HasValue == true
-                        ? TimeSpan.FromMinutes(dto.EstimatedResolutionMinutes.Value)
+                    EstimatedResolutionTime = dto?.EstimatedResolutionMinutes.Ha
+sValue == true
+                        ? TimeSpan.FromMinutes(dto.EstimatedResolutionMinutes.Va
+lue)
                         : EstimateResolutionTime(logs),
                     AiInsights = aiResponse?.Content ?? "Análise não disponível"
                 };
 
-                _logger.LogInformation("Análise de logs concluída para {DeploymentId}", deploymentId);
+                _logger.LogInformation("Análise de logs concluída para {Deployme
+ntId}", deploymentId);
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro durante análise de logs para {DeploymentId}", deploymentId);
+                _logger.LogError(ex, "Erro durante análise de logs para {Deploym
+entId}", deploymentId);
                 return new LogAnalysisResult
                 {
                     DeploymentId = deploymentId,
                     Status = "Erro na análise",
-                    Issues = new List<string> { "Erro durante processamento da IA" },
-                    Recommendations = new List<string> { "Verifique os logs manualmente" },
+                    Issues = new List<string> { "Erro durante processamento da I
+A" },
+                    Recommendations = new List<string> { "Verifique os logs manu
+almente" },
                     Severity = "Média",
                     EstimatedResolutionTime = TimeSpan.FromMinutes(30),
                     AiInsights = ex.Message
@@ -115,7 +137,8 @@ Responda em formato JSON estruturado.";
             }
         }
 
-        public async Task<PerformanceInsight> AnalyzePerformanceAsync(string logs)
+        public async Task<PerformanceInsight> AnalyzePerformanceAsync(string log
+s)
         {
             try
             {
@@ -131,16 +154,21 @@ Identifique:
 4. Recomendações de otimização
 5. Ferramentas sugeridas";
 
-                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, "performance-analysis");
+                var aiText = await _llamaIndexService.GetChatResponseAsync(promp
+t, "performance-analysis");
                 var aiResponse = new { Content = aiText };
 
                 return new PerformanceInsight
                 {
                     AnalysisDate = DateTime.UtcNow,
-                    PerformanceOptimizations = ExtractPerformanceRecommendations(aiResponse?.Content ?? ""),
-                    SecurityImprovements = ExtractSecurityRecommendations(aiResponse?.Content ?? ""),
-                    BestPractices = ExtractBestPractices(aiResponse?.Content ?? ""),
-                    ToolSuggestions = ExtractToolSuggestions(aiResponse?.Content ?? ""),
+                    PerformanceOptimizations = ExtractPerformanceRecommendations
+(aiResponse?.Content ?? ""),
+                    SecurityImprovements = ExtractSecurityRecommendations(aiResp
+onse?.Content ?? ""),
+                    BestPractices = ExtractBestPractices(aiResponse?.Content ??
+""),
+                    ToolSuggestions = ExtractToolSuggestions(aiResponse?.Content
+ ?? ""),
                     AiAnalysis = aiResponse?.Content ?? ""
                 };
             }
@@ -150,7 +178,8 @@ Identifique:
                 return new PerformanceInsight
                 {
                     AnalysisDate = DateTime.UtcNow,
-                    PerformanceOptimizations = new List<string> { "Erro na análise" },
+                    PerformanceOptimizations = new List<string> { "Erro na análi
+se" },
                     SecurityImprovements = new List<string>(),
                     BestPractices = new List<string>(),
                     ToolSuggestions = new List<string>(),
@@ -159,12 +188,14 @@ Identifique:
             }
         }
 
-        public async Task<string> GenerateDeploymentSummaryAsync(string deploymentId, string logs)
+        public async Task<string> GenerateDeploymentSummaryAsync(string deployme
+ntId, string logs)
         {
             try
             {
                 var prompt = $@"
-Gere um resumo detalhado do deployment {deploymentId} baseado nos logs fornecidos:
+Gere um resumo detalhado do deployment {deploymentId} baseado nos logs fornecido
+s:
 
 {logs}
 
@@ -177,7 +208,8 @@ Inclua:
 
 Formato: Relatório técnico conciso";
 
-                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, deploymentId);
+                var aiText = await _llamaIndexService.GetChatResponseAsync(promp
+t, deploymentId);
                 return aiText ?? "Resumo não disponível";
             }
             catch (Exception ex)
@@ -187,12 +219,14 @@ Formato: Relatório técnico conciso";
             }
         }
 
-        public async Task<string> GenerateExecutiveSummaryAsync(string deploymentId, int days)
+        public async Task<string> GenerateExecutiveSummaryAsync(string deploymen
+tId, int days)
         {
             try
             {
                 var prompt = $@"
-Gere um resumo executivo para deployment {deploymentId} considerando os últimos {days} dias.
+Gere um resumo executivo para deployment {deploymentId} considerando os últimos
+{days} dias.
 
 Inclua:
 1. Status geral do sistema
@@ -203,7 +237,8 @@ Inclua:
 
 Formato: Resumo executivo profissional";
 
-                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, deploymentId);
+                var aiText = await _llamaIndexService.GetChatResponseAsync(promp
+t, deploymentId);
                 return aiText ?? "Resumo não disponível";
             }
             catch (Exception ex)
@@ -213,7 +248,8 @@ Formato: Resumo executivo profissional";
             }
         }
 
-        public async Task<SecurityAnalysisResult> AnalyzeSecurityAsync(string logs)
+        public async Task<SecurityAnalysisResult> AnalyzeSecurityAsync(string lo
+gs)
         {
             try
             {
@@ -229,15 +265,19 @@ Identifique:
 4. Recomendações de correção
 5. Questões de compliance";
 
-                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, "security-analysis");
+                var aiText = await _llamaIndexService.GetChatResponseAsync(promp
+t, "security-analysis");
                 var aiResponse = new { Content = aiText };
 
                 return new SecurityAnalysisResult
                 {
                     AnalysisDate = DateTime.UtcNow,
-                    Vulnerabilities = ExtractVulnerabilities(logs, aiResponse?.Content ?? ""),
-                    Recommendations = ExtractSecurityRecommendations(aiResponse?.Content ?? ""),
-                    ComplianceIssues = ExtractComplianceIssues(aiResponse?.Content ?? ""),
+                    Vulnerabilities = ExtractVulnerabilities(logs, aiResponse?.C
+ontent ?? ""),
+                    Recommendations = ExtractSecurityRecommendations(aiResponse?
+.Content ?? ""),
+                    ComplianceIssues = ExtractComplianceIssues(aiResponse?.Conte
+nt ?? ""),
                     RiskLevel = DetermineRiskLevel(logs),
                     AiInsights = aiResponse?.Content ?? ""
                 };
@@ -257,7 +297,8 @@ Identifique:
             }
         }
 
-        public async Task<AnomalyDetectionResult> DetectAnomaliesAsync(string logs)
+        public async Task<AnomalyDetectionResult> DetectAnomaliesAsync(string lo
+gs)
         {
             try
             {
@@ -273,7 +314,8 @@ Detecte:
 4. Comportamentos suspeitos
 5. Sugestões de otimização";
 
-                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, "anomaly-detection");
+                var aiText = await _llamaIndexService.GetChatResponseAsync(promp
+t, "anomaly-detection");
                 var aiResponse = new { Content = aiText };
 
                 return new AnomalyDetectionResult
@@ -281,8 +323,10 @@ Detecte:
                     DetectedAt = DateTime.UtcNow,
                     Anomalies = new List<AnomalyPoint>(),
                     OverallHealthScore = 95,
-                    Trends = ExtractBottlenecks(logs, aiResponse?.Content ?? ""),
-                    Recommendations = ExtractOptimizations(aiResponse?.Content ?? "")
+                    Trends = ExtractBottlenecks(logs, aiResponse?.Content ?? "")
+,
+                    Recommendations = ExtractOptimizations(aiResponse?.Content ?
+? "")
                 };
             }
             catch (Exception ex)
@@ -299,12 +343,14 @@ Detecte:
             }
         }
 
-        public async Task<DeploymentRecommendations> GetDeploymentRecommendationsAsync(string repositoryUrl, string logs)
+        public async Task<DeploymentRecommendations> GetDeploymentRecommendation
+sAsync(string repositoryUrl, string logs)
         {
             try
             {
                 var prompt = $@"
-Analise o repositório {repositoryUrl} e os logs para fornecer recomendações de deployment:
+Analise o repositório {repositoryUrl} e os logs para fornecer recomendações de d
+eployment:
 
 Logs:
 {logs}
@@ -316,28 +362,35 @@ Forneça recomendações específicas para:
 4. Segurança
 5. Performance";
 
-                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, "deployment-recommendations");
+                var aiText = await _llamaIndexService.GetChatResponseAsync(promp
+t, "deployment-recommendations");
                 var aiResponse = new { Content = aiText };
 
                 return new DeploymentRecommendations
                 {
                     RepositoryUrl = repositoryUrl,
                     GeneratedAt = DateTime.UtcNow,
-                    CiCdRecommendations = ExtractCiCdRecommendations(aiResponse?.Content ?? ""),
-                    SecurityRecommendations = ExtractSecurityRecommendations(aiResponse?.Content ?? ""),
-                    PerformanceRecommendations = ExtractPerformanceRecommendations(aiResponse?.Content ?? ""),
-                    MonitoringRecommendations = ExtractMonitoringRecommendations(aiResponse?.Content ?? ""),
+                    CiCdRecommendations = ExtractCiCdRecommendations(aiResponse?
+.Content ?? ""),
+                    SecurityRecommendations = ExtractSecurityRecommendations(aiR
+esponse?.Content ?? ""),
+                    PerformanceRecommendations = ExtractPerformanceRecommendatio
+ns(aiResponse?.Content ?? ""),
+                    MonitoringRecommendations = ExtractMonitoringRecommendations
+(aiResponse?.Content ?? ""),
                     AiInsights = aiResponse?.Content ?? ""
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao gerar recomendações de deployment");
+                _logger.LogError(ex, "Erro ao gerar recomendações de deployment"
+);
                 return new DeploymentRecommendations
                 {
                     RepositoryUrl = repositoryUrl,
                     GeneratedAt = DateTime.UtcNow,
-                    CiCdRecommendations = new List<string> { "Erro na análise" },
+                    CiCdRecommendations = new List<string> { "Erro na análise" }
+,
                     SecurityRecommendations = new List<string>(),
                     PerformanceRecommendations = new List<string>(),
                     MonitoringRecommendations = new List<string>(),
@@ -350,17 +403,18 @@ Forneça recomendações específicas para:
         private List<string> ExtractIssues(string logs, string aiResponse)
         {
             var issues = new List<string>();
-            
+
             if (logs.Contains("ERROR", StringComparison.OrdinalIgnoreCase))
                 issues.Add("Erros detectados nos logs");
-            
+
             if (logs.Contains("EXCEPTION", StringComparison.OrdinalIgnoreCase))
                 issues.Add("Exceções encontradas");
-            
+
             if (logs.Contains("TIMEOUT", StringComparison.OrdinalIgnoreCase))
                 issues.Add("Timeouts detectados");
 
-            return issues.Any() ? issues : new List<string> { "Nenhum problema crítico detectado" };
+            return issues.Any() ? issues : new List<string> { "Nenhum problema c
+rítico detectado" };
         }
 
         private List<string> ExtractRecommendations(string aiResponse)
@@ -375,16 +429,17 @@ Forneça recomendações específicas para:
 
         private string DetermineSeverity(string logs)
         {
-            if (logs.Contains("CRITICAL", StringComparison.OrdinalIgnoreCase) || 
+            if (logs.Contains("CRITICAL", StringComparison.OrdinalIgnoreCase) ||
+
                 logs.Contains("FATAL", StringComparison.OrdinalIgnoreCase))
                 return "Crítica";
-            
+
             if (logs.Contains("ERROR", StringComparison.OrdinalIgnoreCase))
                 return "Alta";
-            
+
             if (logs.Contains("WARN", StringComparison.OrdinalIgnoreCase))
                 return "Média";
-            
+
             return "Baixa";
         }
 
@@ -392,14 +447,15 @@ Forneça recomendações específicas para:
         {
             if (logs.Contains("CRITICAL", StringComparison.OrdinalIgnoreCase))
                 return TimeSpan.FromMinutes(15);
-            
+
             if (logs.Contains("ERROR", StringComparison.OrdinalIgnoreCase))
                 return TimeSpan.FromMinutes(30);
-            
+
             return TimeSpan.FromHours(1);
         }
 
-        private List<string> ExtractPerformanceRecommendations(string aiResponse)
+        private List<string> ExtractPerformanceRecommendations(string aiResponse
+)
         {
             return new List<string>
             {
@@ -439,17 +495,21 @@ Forneça recomendações específicas para:
             };
         }
 
-        private List<string> ExtractVulnerabilities(string logs, string aiResponse)
+        private List<string> ExtractVulnerabilities(string logs, string aiRespon
+se)
         {
             var vulnerabilities = new List<string>();
-            
-            if (logs.Contains("SQL injection", StringComparison.OrdinalIgnoreCase))
+
+            if (logs.Contains("SQL injection", StringComparison.OrdinalIgnoreCas
+e))
                 vulnerabilities.Add("Possível SQL injection detectado");
-            
-            if (logs.Contains("authentication failed", StringComparison.OrdinalIgnoreCase))
+
+            if (logs.Contains("authentication failed", StringComparison.OrdinalI
+gnoreCase))
                 vulnerabilities.Add("Falhas de autenticação frequentes");
 
-            return vulnerabilities.Any() ? vulnerabilities : new List<string> { "Nenhuma vulnerabilidade crítica detectada" };
+            return vulnerabilities.Any() ? vulnerabilities : new List<string> {
+"Nenhuma vulnerabilidade crítica detectada" };
         }
 
         private List<string> ExtractComplianceIssues(string aiResponse)
@@ -466,24 +526,26 @@ Forneça recomendações específicas para:
         {
             if (logs.Contains("CRITICAL", StringComparison.OrdinalIgnoreCase))
                 return "Alto";
-            
-            if (logs.Contains("authentication failed", StringComparison.OrdinalIgnoreCase))
+
+            if (logs.Contains("authentication failed", StringComparison.OrdinalI
+gnoreCase))
                 return "Médio";
-            
+
             return "Baixo";
         }
 
         private List<string> ExtractBottlenecks(string logs, string aiResponse)
         {
             var bottlenecks = new List<string>();
-            
+
             if (logs.Contains("slow query", StringComparison.OrdinalIgnoreCase))
                 bottlenecks.Add("Consultas SQL lentas detectadas");
-            
+
             if (logs.Contains("memory", StringComparison.OrdinalIgnoreCase))
                 bottlenecks.Add("Uso elevado de memória");
 
-            return bottlenecks.Any() ? bottlenecks : new List<string> { "Nenhum gargalo significativo detectado" };
+            return bottlenecks.Any() ? bottlenecks : new List<string> { "Nenhum
+gargalo significativo detectado" };
         }
 
         private List<string> ExtractOptimizations(string aiResponse)
@@ -563,7 +625,8 @@ Forneça recomendações específicas para:
     // Plugins para Semantic Kernel
     public class DeploymentAnalysisPlugin
     {
-        [KernelFunction, Description("Analisa logs de deployment e identifica problemas")]
+        [KernelFunction, Description("Analisa logs de deployment e identifica pr
+oblemas")]
         public string AnalyzeLogs(string logs)
         {
             return "Análise de deployment concluída";
@@ -572,7 +635,8 @@ Forneça recomendações específicas para:
 
     public class SecurityAnalysisPlugin
     {
-        [KernelFunction, Description("Analisa aspectos de segurança em deployments")]
+        [KernelFunction, Description("Analisa aspectos de segurança em deploymen
+ts")]
         public string AnalyzeSecurity(string logs)
         {
             return "Análise de segurança concluída";

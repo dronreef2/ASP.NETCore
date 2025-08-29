@@ -7,7 +7,8 @@ namespace TutorCopiloto.Services
     public class LlamaIndexOptions
     {
         public string ApiKey { get; set; } = string.Empty;
-        public string BaseUrl { get; set; } = "https://api.cloud.llamaindex.ai/api/v1";
+        public string BaseUrl { get; set; } = "https://api.cloud.llamaindex.ai/a
+pi/v1";
         public string Model { get; set; } = "gpt-3.5-turbo";
         public int MaxTokens { get; set; } = 1000;
         public double Temperature { get; set; } = 0.7;
@@ -36,7 +37,8 @@ namespace TutorCopiloto.Services
             _httpClient.Timeout = TimeSpan.FromSeconds(_options.TimeoutSeconds);
         }
 
-        public async Task<string> GetChatResponseAsync(string message, string userId = "anonymous")
+        public async Task<string> GetChatResponseAsync(string message, string us
+erId = "anonymous")
         {
             try
             {
@@ -57,37 +59,50 @@ namespace TutorCopiloto.Services
                 };
 
                 var jsonContent = JsonSerializer.Serialize(request);
-                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                var content = new StringContent(jsonContent, Encoding.UTF8, "app
+lication/json");
 
-                _logger.LogInformation("Enviando mensagem para LlamaIndex API: {UserId}", userId);
+                _logger.LogInformation("Enviando mensagem para LlamaIndex API: {
+UserId}", userId);
 
-                var response = await _httpClient.PostAsync("/chat/completions", content);
+                var response = await _httpClient.PostAsync("/chat/completions",
+content);
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Erro na API do LlamaIndex: {StatusCode} - {Content}",
+                    var errorContent = await response.Content.ReadAsStringAsync(
+);
+                    _logger.LogError("Erro na API do LlamaIndex: {StatusCode} -
+{Content}",
                         response.StatusCode, errorContent);
-                    return "Desculpe, houve um erro ao processar sua mensagem. Tente novamente.";
+                    return "Desculpe, houve um erro ao processar sua mensagem. T
+ente novamente.";
                 }
 
                 var responseJson = await response.Content.ReadAsStringAsync();
-                var responseData = JsonSerializer.Deserialize<LlamaIndexResponse>(responseJson);
+                var responseData = JsonSerializer.Deserialize<LlamaIndexResponse
+>(responseJson);
 
-                if (responseData?.choices?.FirstOrDefault()?.message?.content != null)
+                if (responseData?.choices?.FirstOrDefault()?.message?.content !=
+ null)
                 {
-                    var responseText = responseData.choices.First().message.content;
-                    _logger.LogInformation("Resposta recebida do LlamaIndex para usuário: {UserId}", userId);
+                    var responseText = responseData.choices.First().message.cont
+ent;
+                    _logger.LogInformation("Resposta recebida do LlamaIndex para
+ usuário: {UserId}", userId);
                     return responseText;
                 }
 
-                _logger.LogWarning("LlamaIndex retornou resposta vazia para usuário: {UserId}", userId);
+                _logger.LogWarning("LlamaIndex retornou resposta vazia para usu
+ário: {UserId}", userId);
                 return "Desculpe, não consegui gerar uma resposta no momento.";
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao chamar API do LlamaIndex para usuário: {UserId}", userId);
-                return "Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente.";
+                _logger.LogError(ex, "Erro ao chamar API do LlamaIndex para usu
+ário: {UserId}", userId);
+                return "Desculpe, ocorreu um erro ao processar sua mensagem. Ten
+te novamente.";
             }
         }
 
