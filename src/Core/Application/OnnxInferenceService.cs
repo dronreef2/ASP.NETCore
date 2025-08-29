@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using System.Text.Json;
@@ -82,7 +84,7 @@ namespace TutorCopiloto.Services
             // Em produção, você carregaria modelos .onnx reais aqui
         }
 
-        public async Task<DeploymentPrediction> PredictDeploymentOutcomeAsync(DeploymentFeatures features)
+        public Task<DeploymentPrediction> PredictDeploymentOutcomeAsync(DeploymentFeatures features)
         {
             try
             {
@@ -91,7 +93,7 @@ namespace TutorCopiloto.Services
                 // Se não há modelo ONNX, use heurísticas
                 if (_deploymentPredictionSession == null)
                 {
-                    return PredictWithHeuristics(features);
+                    return Task.FromResult(PredictWithHeuristics(features));
                 }
 
                 // Preparar entrada para o modelo ONNX
@@ -101,31 +103,34 @@ namespace TutorCopiloto.Services
                     NamedOnnxValue.CreateFromTensor("input", inputTensor)
                 };
 
-                // Executar inferência
-                using var results = await Task.Run(() => _deploymentPredictionSession.Run(inputs));
-                var output = results.First().AsTensor<float>();
-
-                var successProbability = output[0];
-                var estimatedDuration = TimeSpan.FromMinutes(output[1] * 60); // Converter de horas para minutos
-
-                return new DeploymentPrediction
+                // Executar inferência em background
+                return Task.Run(() =>
                 {
-                    SuccessProbability = successProbability,
-                    EstimatedDuration = estimatedDuration,
-                    RiskFactors = IdentifyRiskFactors(features),
-                    Confidence = CalculateConfidence(successProbability),
-                    Recommendations = GenerateRecommendations(features, successProbability),
-                    PredictedAt = DateTime.UtcNow
-                };
+                    using var results = _deploymentPredictionSession.Run(inputs);
+                    var output = results.First().AsTensor<float>();
+
+                    var successProbability = output[0];
+                    var estimatedDuration = TimeSpan.FromMinutes(output[1] * 60); // Converter de horas para minutos
+
+                    return new DeploymentPrediction
+                    {
+                        SuccessProbability = successProbability,
+                        EstimatedDuration = estimatedDuration,
+                        RiskFactors = IdentifyRiskFactors(features),
+                        Confidence = CalculateConfidence(successProbability),
+                        Recommendations = GenerateRecommendations(features, successProbability),
+                        PredictedAt = DateTime.UtcNow
+                    };
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro na predição de deployment");
-                return PredictWithHeuristics(features);
+                return Task.FromResult(PredictWithHeuristics(features));
             }
         }
 
-        public async Task<AnomalyDetectionResult> DetectAnomaliesAsync(List<DeploymentMetrics> historicalData)
+        public Task<AnomalyDetectionResult> DetectAnomaliesAsync(List<DeploymentMetrics> historicalData)
         {
             try
             {
@@ -152,30 +157,30 @@ namespace TutorCopiloto.Services
                     }
                 }
 
-                return new AnomalyDetectionResult
+                return Task.FromResult(new AnomalyDetectionResult
                 {
                     Anomalies = anomalies,
                     OverallHealthScore = CalculateHealthScore(anomalies.Count, historicalData.Count),
                     Trends = IdentifyTrends(historicalData),
                     Recommendations = GenerateAnomalyRecommendations(anomalies),
                     DetectedAt = DateTime.UtcNow
-                };
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro na detecção de anomalias");
-                return new AnomalyDetectionResult
+                return Task.FromResult(new AnomalyDetectionResult
                 {
                     Anomalies = new List<AnomalyPoint>(),
                     OverallHealthScore = 75,
                     Trends = new List<string> { "Dados insuficientes para análise de tendências" },
                     Recommendations = new List<string> { "Colete mais dados históricos" },
                     DetectedAt = DateTime.UtcNow
-                };
+                });
             }
         }
 
-        public async Task<ResourceOptimizationResult> OptimizeResourcesAsync(ResourceUsageData currentUsage)
+        public Task<ResourceOptimizationResult> OptimizeResourcesAsync(ResourceUsageData currentUsage)
         {
             try
             {
@@ -225,26 +230,26 @@ namespace TutorCopiloto.Services
                 var estimatedCostImpact = CalculateCostImpact(optimizations);
                 var performanceImpact = CalculatePerformanceImpact(optimizations);
 
-                return new ResourceOptimizationResult
+                return Task.FromResult(new ResourceOptimizationResult
                 {
                     Optimizations = optimizations,
                     EstimatedCostImpact = estimatedCostImpact,
                     PerformanceImpact = performanceImpact,
                     ImplementationPriority = DeterminePriority(optimizations),
                     OptimizedAt = DateTime.UtcNow
-                };
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro na otimização de recursos");
-                return new ResourceOptimizationResult
+                return Task.FromResult(new ResourceOptimizationResult
                 {
                     Optimizations = new List<ResourceOptimization>(),
                     EstimatedCostImpact = 0,
                     PerformanceImpact = "Neutro",
                     ImplementationPriority = "Baixa",
                     OptimizedAt = DateTime.UtcNow
-                };
+                });
             }
         }
 

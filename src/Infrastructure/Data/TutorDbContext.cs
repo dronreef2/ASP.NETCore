@@ -1,12 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using TutorCopiloto.Models;
+using TutorCopiloto.Services;
 
 namespace TutorCopiloto.Data;
 
 /// <summary>
 /// Contexto de banco de dados para o Tutor Copiloto
 /// </summary>
-public class TutorDbContext : DbContext
+public class TutorDbContext : DbContext, IApplicationDbContext
 {
     public TutorDbContext(DbContextOptions<TutorDbContext> options) : base(options)
     {

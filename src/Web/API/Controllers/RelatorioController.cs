@@ -230,7 +230,7 @@ public class RelatorioController : ControllerBase
     /// <returns>Lista de relatórios</returns>
     [HttpGet("lista")]
     [ProducesResponseType(typeof(IEnumerable<ResumoRelatorio>), 200)]
-    public async Task<ActionResult<IEnumerable<ResumoRelatorio>>> ListarRelatorios(
+    public ActionResult<IEnumerable<ResumoRelatorio>> ListarRelatorios(
         [FromQuery] string? userId = null)
     {
         try

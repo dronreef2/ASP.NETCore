@@ -295,22 +295,22 @@ namespace TutorCopiloto.Services
 
     public class McpRepositoryAnalysis
     {
-        public string Repository { get; set; }
-        public string Branch { get; set; }
-        public McpResponse RepositoryInfo { get; set; }
-        public McpResponse RecentCommits { get; set; }
-        public McpResponse OpenIssues { get; set; }
-        public McpResponse OpenPullRequests { get; set; }
+        public string Repository { get; set; } = string.Empty;
+        public string Branch { get; set; } = string.Empty;
+        public McpResponse RepositoryInfo { get; set; } = new();
+        public McpResponse RecentCommits { get; set; } = new();
+        public McpResponse OpenIssues { get; set; } = new();
+        public McpResponse OpenPullRequests { get; set; } = new();
         public DateTime AnalysisTimestamp { get; set; }
     }
 
     public class McpQueryResult
     {
-        public string Repository { get; set; }
-        public string Query { get; set; }
-        public string Context { get; set; }
-        public McpResponse FileSearchResults { get; set; }
-        public McpResponse RepositoryStructure { get; set; }
+        public string Repository { get; set; } = string.Empty;
+        public string Query { get; set; } = string.Empty;
+        public string Context { get; set; } = string.Empty;
+        public McpResponse FileSearchResults { get; set; } = new();
+        public McpResponse RepositoryStructure { get; set; } = new();
         public DateTime QueryTimestamp { get; set; }
     }
 
