@@ -18,12 +18,12 @@ namespace TutorCopiloto.Services
     {
         private readonly ILogger<IntelligentAnalysisService> _logger;
         private readonly IConfiguration _configuration;
-        private readonly LlamaIndexService _llamaIndexService;
+        private readonly ILlamaIndexService _llamaIndexService;
         private readonly Kernel _kernel;
 
         public IntelligentAnalysisService(
             IConfiguration configuration,
-            LlamaIndexService llamaIndexService,
+            ILlamaIndexService llamaIndexService,
             ILogger<IntelligentAnalysisService> logger)
         {
             _configuration = configuration;

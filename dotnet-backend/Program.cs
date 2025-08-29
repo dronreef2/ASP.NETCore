@@ -80,7 +80,7 @@ namespace TutorCopiloto
             builder.Services.Configure<LlamaIndexOptions>(
                 builder.Configuration.GetSection("AI:LlamaIndex"));
 
-            builder.Services.AddHttpClient<LlamaIndexService>((provider, client) =>
+            builder.Services.AddHttpClient<ILlamaIndexService, LlamaIndexService>((provider, client) =>
             {
                 var options = provider.GetRequiredService<IOptions<LlamaIndexOptions>>().Value;
                 client.BaseAddress = new Uri(options.BaseUrl);
@@ -89,7 +89,7 @@ namespace TutorCopiloto
                 client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
             });
 
-            builder.Services.AddScoped<LlamaIndexService>();
+            builder.Services.AddScoped<ILlamaIndexService, LlamaIndexService>();
 
             // 4. Injeção de Dependência - Serviços customizados
             builder.Services.AddScoped<IRelatorioService, RelatorioService>();

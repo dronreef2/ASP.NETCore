@@ -15,7 +15,13 @@ namespace TutorCopiloto.Services
         public int TimeoutSeconds { get; set; } = 30;
     }
 
-    public class LlamaIndexService
+    public interface ILlamaIndexService
+    {
+        Task<string> GetChatResponseAsync(string message, string userId = "anonymous");
+        Task<string> GetCompletionAsync(string prompt);
+    }
+
+    public class LlamaIndexService : ILlamaIndexService
     {
         private readonly HttpClient _httpClient;
         private readonly LlamaIndexOptions _options;
