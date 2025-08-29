@@ -10,12 +10,12 @@ namespace TutorCopiloto.Services;
 /// </summary>
 public class RelatorioService : IRelatorioService
 {
-    private readonly TutorDbContext _context;
+    private readonly IApplicationDbContext _context;
     private readonly IStringLocalizer<RelatorioService> _localizer;
     private readonly ILogger<RelatorioService> _logger;
 
     public RelatorioService(
-        TutorDbContext context,
+        IApplicationDbContext context,
         IStringLocalizer<RelatorioService> localizer,
         ILogger<RelatorioService> logger)
     {
