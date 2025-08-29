@@ -253,7 +253,7 @@ namespace TutorCopiloto.Services
             }
         }
 
-        public async Task<SecurityThreatAssessment> AssessSecurityThreatsAsync(SecurityFeatures features)
+        public Task<SecurityThreatAssessment> AssessSecurityThreatsAsync(SecurityFeatures features)
         {
             try
             {
@@ -303,26 +303,26 @@ namespace TutorCopiloto.Services
                 var overallRisk = CalculateOverallRisk(threats);
                 var complianceStatus = AssessCompliance(features);
 
-                return new SecurityThreatAssessment
+                return Task.FromResult(new SecurityThreatAssessment
                 {
                     Threats = threats,
                     OverallRiskScore = overallRisk,
                     ComplianceStatus = complianceStatus,
                     MitigationPlan = GenerateMitigationPlan(threats),
                     AssessedAt = DateTime.UtcNow
-                };
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro na avaliação de segurança");
-                return new SecurityThreatAssessment
+                return Task.FromResult(new SecurityThreatAssessment
                 {
                     Threats = new List<SecurityThreat>(),
                     OverallRiskScore = 50,
                     ComplianceStatus = "Desconhecido",
                     MitigationPlan = new List<string> { "Avaliação manual necessária" },
                     AssessedAt = DateTime.UtcNow
-                };
+                });
             }
         }
 
