@@ -61,7 +61,7 @@ namespace TutorCopiloto.Controllers
                 {
                     var deployment = await _deploymentService.CreateDeploymentAsync(new DeploymentRequest
                     {
-                        RepositoryUrl = webhookData.Repository.CloneUrl,
+                        RepositoryUrl = webhookData.Repository.CloneUrl ?? string.Empty,
                         Branch = webhookData.Ref.Replace("refs/heads/", ""),
                         CommitSha = webhookData.After,
                         Trigger = "webhook",

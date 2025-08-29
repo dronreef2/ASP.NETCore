@@ -56,10 +56,10 @@ namespace TutorCopiloto.Services
                 }
 
                 // 2. Analisar estrutura de arquivos
-                await AnalyzeFileStructureAsync(clonePath, analysis);
+                AnalyzeFileStructure(clonePath, analysis);
                 
                 // 3. Identificar linguagens de programação
-                await IdentifyProgrammingLanguagesAsync(clonePath, analysis);
+                IdentifyProgrammingLanguages(clonePath, analysis);
                 
                 // 4. Analisar arquivos de configuração
                 await AnalyzeConfigurationFilesAsync(clonePath, analysis);
@@ -73,7 +73,7 @@ namespace TutorCopiloto.Services
                 analysis.Status = "Completed";
                 
                 // Limpar arquivos temporários
-                await CleanupRepositoryAsync(clonePath);
+                CleanupRepository(clonePath);
                 
                 _logger.LogInformation("Análise concluída para {RepositoryUrl}", repositoryUrl);
             }
@@ -166,7 +166,7 @@ namespace TutorCopiloto.Services
             }
         }
 
-        private async Task AnalyzeFileStructureAsync(string clonePath, RepositoryAnalysis analysis)
+        private void AnalyzeFileStructure(string clonePath, RepositoryAnalysis analysis)
         {
             var step = new AnalysisStep
             {
@@ -220,7 +220,7 @@ namespace TutorCopiloto.Services
             }
         }
 
-        private async Task IdentifyProgrammingLanguagesAsync(string clonePath, RepositoryAnalysis analysis)
+        private void IdentifyProgrammingLanguages(string clonePath, RepositoryAnalysis analysis)
         {
             var step = new AnalysisStep
             {
@@ -456,7 +456,7 @@ namespace TutorCopiloto.Services
             analysis.FinalReport = report.ToString();
         }
 
-        private async Task CleanupRepositoryAsync(string clonePath)
+        private void CleanupRepository(string clonePath)
         {
             try
             {
