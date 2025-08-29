@@ -59,7 +59,7 @@ namespace TutorCopiloto.Controllers
                 var githubEvent = Request.Headers["X-GitHub-Event"].FirstOrDefault();
                 if (githubEvent == "push" && (webhookData.Ref == "refs/heads/main" || webhookData.Ref == "refs/heads/master"))
                 {
-                    var deployment = await _deploymentService.CreateDeploymentAsync(new DeploymentRequest
+                    var deployment = _deploymentService.CreateDeployment(new DeploymentRequest
                     {
                         RepositoryUrl = webhookData.Repository.CloneUrl ?? string.Empty,
                         Branch = webhookData.Ref.Replace("refs/heads/", ""),

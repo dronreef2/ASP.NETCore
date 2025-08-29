@@ -6,7 +6,7 @@ namespace TutorCopiloto.Services
 {
     public interface IDeploymentService
     {
-        Task<Deployment> CreateDeploymentAsync(DeploymentRequest request);
+        Deployment CreateDeployment(DeploymentRequest request);
         Task<List<Deployment>> GetDeploymentsAsync(int page = 1, int size = 10);
         Task<Deployment?> GetDeploymentAsync(string id);
         Task<string?> GetDeploymentLogsAsync(string id);
@@ -48,7 +48,7 @@ namespace TutorCopiloto.Services
             _intelligentAnalysis = intelligentAnalysis;
             _onnxInference = onnxInference;
             _repositoryAnalysis = repositoryAnalysis;
-        }        public async Task<Deployment> CreateDeploymentAsync(DeploymentRequest request)
+        }        public Deployment CreateDeployment(DeploymentRequest request)
         {
             var deployment = new Deployment
             {
