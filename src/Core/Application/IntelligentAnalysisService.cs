@@ -1,5 +1,9 @@
 using Microsoft.SemanticKernel;
 using System.ComponentModel;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace TutorCopiloto.Services
 {
