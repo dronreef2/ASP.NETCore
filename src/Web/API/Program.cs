@@ -190,9 +190,20 @@ namespace TutorCopiloto
             builder.Services.AddScoped<IGitService, GitService>();
             builder.Services.AddScoped<IGitHubChatIntegrationService, GitHubChatIntegrationService>();
             builder.Services.AddScoped<GitHubMcpService>();
-            builder.Services.AddSingleton<INgrokTunnelService, NgrokTunnelService>();
-            builder.Services.AddHostedService<NgrokTunnelService>(provider => 
-                (NgrokTunnelService)provider.GetRequiredService<INgrokTunnelService>());
+
+            // Ngrok Tunnel Service - apenas em desenvolvimento
+            if (builder.Configuration.GetValue<bool>("Ngrok:Enabled", false))
+            {
+                builder.Services.AddSingleton<INgrokTunnelService, NgrokTunnelService>();
+                builder.Services.AddHostedService<NgrokTunnelService>(provider =>
+                    (NgrokTunnelService)provider.GetRequiredService<INgrokTunnelService>());
+            }
+            else
+            {
+                // Implementação dummy para produção
+                builder.Services.AddSingleton<INgrokTunnelService, DummyNgrokTunnelService>();
+            }
+
             builder.Services.AddHttpClient();
 
             // 4. SignalR para tempo real

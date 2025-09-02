@@ -17,6 +17,15 @@ namespace TutorCopiloto.Services
         Task StopTunnelAsync();
     }
 
+    // Implementação dummy para quando ngrok não está disponível
+    public class DummyNgrokTunnelService : INgrokTunnelService
+    {
+        public Task<string?> GetPublicUrlAsync() => Task.FromResult<string?>(null);
+        public Task<bool> IsRunningAsync() => Task.FromResult(false);
+        public Task StartTunnelAsync(int port) => Task.CompletedTask;
+        public Task StopTunnelAsync() => Task.CompletedTask;
+    }
+
     public class NgrokTunnelService : BackgroundService, INgrokTunnelService
     {
         private readonly ILogger<NgrokTunnelService> _logger;

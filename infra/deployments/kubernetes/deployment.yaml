@@ -10,10 +10,8 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: orchestratordata:
-  # Base64 encoded values - substituir pelos valores reais
-  anthropic-api-key: "VE9ET19TRVRVUA=="  # TODO_SETUP
-  llamaindex-api-key: "VE9ET19TRVRVUA=="  # TODO_SETUPnamespace: tutor-copiloto
+  name: tutor-copiloto-orchestrator
+  namespace: tutor-copiloto
   labels:
     app: orchestrator
     component: backend
@@ -45,6 +43,7 @@ spec:
         ports:
         - containerPort: 8080
           protocol: TCP
+          name: http
         env:
         - name: NODE_ENV
           value: "production"
