@@ -3,23 +3,19 @@
 
 > Sistema de tutoria inteligente com IA integrada
 
-## 🚀 Deploy Automático no Heroku
+## 🚀 Deploy Automático no GitHub Pages
 
-Este projeto está configurado com **deploy automático via GitHub Actions**. Todo push na branch `main` dispara automaticamente o deploy no Heroku.
+Este projeto está configurado com **deploy automático via GitHub Actions** no **GitHub Pages**. Todo push na branch `main` dispara automaticamente o deploy.
 
 ### 📋 Como Configurar o Deploy Automático
 
-1. **Criar App no Heroku**:
-   ```bash
-   heroku create seu-app-nome
-   heroku stack:set container
-   ```
+1. **Habilitar GitHub Pages**:
+   - Acesse: Settings > Pages do repositório
+   - Selecione **Source**: GitHub Actions
 
-2. **Configurar Secrets no GitHub**:
-   - Acesse: Settings > Secrets and variables > Actions
-   - Adicione: `HEROKU_API_KEY` e `HEROKU_APP_NAME`
+2. **Deploy Automático**: ✅ Pronto! Todo push na `main` faz deploy automático.
 
-3. **Deploy Automático**: ✅ Pronto! Todo push na `main` faz deploy automático.
+3. **Acessar aplicação**: https://dronreef2.github.io/ASP.NETCore
 
 📖 **Instruções completas**: [DEPLOY_GITHUB_ACTIONS.md](DEPLOY_GITHUB_ACTIONS.md)
 

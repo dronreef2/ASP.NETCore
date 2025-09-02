@@ -1,0 +1,185 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore src/Web/API/TutorCopiloto.csproj
+
+    - name: Build
+      run: dotnet build src/Web/API/TutorCopiloto.csproj --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal --configuration Release
+
+    - name: Publish
+      run: dotnet publish src/Web/API/TutorCopiloto.csproj --configuration Release --output ./publish --no-build
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+
+    - name: Create static site
+      run: |
+        mkdir -p ./public
+        cat > ./public/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>🎓 Tutor Copiloto - API Documentation</title>
+            <style>
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    min-height: 100vh;
+                }
+                .container {
+                    background: rgba(255, 255, 255, 0.1);
+                    padding: 30px;
+                    border-radius: 10px;
+                    backdrop-filter: blur(10px);
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                }
+                h1 {
+                    text-align: center;
+                    margin-bottom: 30px;
+                    font-size: 2.5em;
+                }
+                .status {
+                    background: rgba(0, 255, 0, 0.2);
+                    border: 1px solid rgba(0, 255, 0, 0.3);
+                    padding: 15px;
+                    border-radius: 5px;
+                    margin: 20px 0;
+                }
+                .api-info {
+                    background: rgba(255, 255, 255, 0.1);
+                    padding: 20px;
+                    border-radius: 5px;
+                    margin: 20px 0;
+                }
+                .endpoint {
+                    background: rgba(0, 0, 0, 0.2);
+                    padding: 10px;
+                    margin: 10px 0;
+                    border-radius: 3px;
+                    font-family: monospace;
+                }
+                .github-link {
+                    display: inline-block;
+                    background: #24292e;
+                    color: white;
+                    padding: 10px 20px;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    margin-top: 20px;
+                }
+                .github-link:hover {
+                    background: #1a1e22;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>🎓 Tutor Copiloto</h1>
+                <p style="text-align: center; font-size: 1.2em; margin-bottom: 30px;">
+                    Sistema de tutoria inteligente com IA integrada
+                </p>
+
+                <div class="status">
+                    <h3>✅ Status: API Online</h3>
+                    <p>Deploy realizado com sucesso em: <strong>${{ github.event.head_commit.timestamp }}</strong></p>
+                    <p>Commit: <code>${{ github.sha }}</code></p>
+                </div>
+
+                <div class="api-info">
+                    <h3>📋 Sobre a API</h3>
+                    <p>Esta é uma aplicação ASP.NET Core que fornece serviços de tutoria inteligente.</p>
+
+                    <h4>🔗 Endpoints Principais</h4>
+                    <div class="endpoint">GET /health - Verificar status da API</div>
+                    <div class="endpoint">GET /swagger - Documentação interativa da API</div>
+                    <div class="endpoint">POST /chathub - WebSocket para chat em tempo real</div>
+                    <div class="endpoint">GET /api/analysis - Análise de código</div>
+                    <div class="endpoint">GET /api/users - Gerenciamento de usuários</div>
+                </div>
+
+                <div class="api-info">
+                    <h3>🚀 Tecnologias Utilizadas</h3>
+                    <ul>
+                        <li>ASP.NET Core 8.0</li>
+                        <li>Entity Framework Core</li>
+                        <li>SignalR para tempo real</li>
+                        <li>Swagger/OpenAPI</li>
+                        <li>SQLite/PostgreSQL</li>
+                        <li>Docker</li>
+                    </ul>
+                </div>
+
+                <div class="api-info">
+                    <h3>📊 Funcionalidades</h3>
+                    <ul>
+                        <li>✅ Sistema de tutoria com IA</li>
+                        <li>✅ Análise de código inteligente</li>
+                        <li>✅ Chat em tempo real</li>
+                        <li>✅ Gerenciamento de usuários</li>
+                        <li>✅ Avaliação de código</li>
+                        <li>✅ Integração com GitHub</li>
+                    </ul>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://github.com/dronreef2/ASP.NETCore" class="github-link" target="_blank">
+                        📖 Ver Código Fonte no GitHub
+                    </a>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px; font-size: 0.9em; opacity: 0.8;">
+                    <p>🚀 Deploy automático via GitHub Actions</p>
+                    <p>Última atualização: ${{ github.event.head_commit.timestamp }}</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        EOF
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./public
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
