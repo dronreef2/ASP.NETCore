@@ -6,11 +6,7 @@
   "repository": "https://github.com/dronreef2/ASP.NETCore",
   "logo": "https://raw.githubusercontent.com/dronreef2/ASP.NETCore/main/logo.png",
   "success_url": "/health",
-  "buildpacks": [
-    {
-      "url": "https://github.com/jincod/dotnetcore-buildpack"
-    }
-  ],
+  "stack": "container",
   "env": {
     "ASPNETCORE_ENVIRONMENT": {
       "description": "Environment for ASP.NET Core",
