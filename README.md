@@ -3,6 +3,28 @@
 
 > Sistema de tutoria inteligente com IA integrada
 
+## 🚀 Deploy Automático no Heroku
+
+Este projeto está configurado com **deploy automático via GitHub Actions**. Todo push na branch `main` dispara automaticamente o deploy no Heroku.
+
+### 📋 Como Configurar o Deploy Automático
+
+1. **Criar App no Heroku**:
+   ```bash
+   heroku create seu-app-nome
+   heroku stack:set container
+   ```
+
+2. **Configurar Secrets no GitHub**:
+   - Acesse: Settings > Secrets and variables > Actions
+   - Adicione: `HEROKU_API_KEY` e `HEROKU_APP_NAME`
+
+3. **Deploy Automático**: ✅ Pronto! Todo push na `main` faz deploy automático.
+
+📖 **Instruções completas**: [DEPLOY_GITHUB_ACTIONS.md](DEPLOY_GITHUB_ACTIONS.md)
+
+---
+
 ## ✅ Status Atual do Projeto
 
 ### 🟢 Resolvidos

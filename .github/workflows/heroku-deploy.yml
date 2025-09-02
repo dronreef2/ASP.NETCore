@@ -1,0 +1,58 @@
+name: Deploy to Heroku
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore src/Web/API/TutorCopiloto.csproj
+
+    - name: Build
+      run: dotnet build src/Web/API/TutorCopiloto.csproj --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal --configuration Release
+
+    - name: Publish
+      run: dotnet publish src/Web/API/TutorCopiloto.csproj --configuration Release --output ./publish --no-build
+
+    - name: Build Docker image
+      run: docker build -t tutor-copiloto .
+
+    - name: Login to Heroku Container Registry
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: echo $HEROKU_API_KEY | docker login --username=_ --password-stdin registry.heroku.com
+
+    - name: Push Docker image to Heroku
+      env:
+        HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+      run: |
+        docker tag tutor-copiloto registry.heroku.com/$HEROKU_APP_NAME/web
+        docker push registry.heroku.com/$HEROKU_APP_NAME/web
+
+    - name: Release Docker image
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+      run: |
+        curl -X PATCH \
+          -H "Authorization: Bearer $HEROKU_API_KEY" \
+          -H "Content-Type: application/json" \
+          -H "Accept: application/vnd.heroku+json; version=3.docker-releases" \
+          -d '{"updates":[{"type":"web","docker_image":"registry.heroku.com/'$HEROKU_APP_NAME'/web:latest"}]}' \
+          https://api.heroku.com/apps/$HEROKU_APP_NAME/formation
