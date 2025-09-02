@@ -15,7 +15,14 @@ fi
 
 # Verificar se está conectado a um cluster
 if ! kubectl cluster-info &> /dev/null; then
-    echo "❌ Não conectado a um cluster Kubernetes."
+    echo "⚠️  Não conectado a um cluster Kubernetes."
+    echo "Para configurar secrets, primeiro conecte-se a um cluster válido:"
+    echo "  - Para Minikube: minikube start"
+    echo "  - Para Kind: kind create cluster"
+    echo "  - Para AKS/EKS/GKE: configure kubectl"
+    echo ""
+    echo "Ou execute o deployment local com Docker Compose:"
+    echo "  docker-compose up -d"
     exit 1
 fi
 
