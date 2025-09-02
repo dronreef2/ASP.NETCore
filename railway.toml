@@ -1,0 +1,45 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile.Railway"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[environments]
+[environments.production]
+ASPNETCORE_ENVIRONMENT = "Railway"
+ASPNETCORE_URLS = "http://0.0.0.0:$PORT"
+
+[[services]]
+name = "api"
+source = "."
+buildCommand = "docker build -f Dockerfile.Railway -t tutor-copiloto ."
+startCommand = "docker run -p $PORT:8080 tutor-copiloto"
+
+[[services.databases]]
+name = "postgresql"
+type = "postgresql"
+
+[[services.databases]]
+name = "redis"
+type = "redis"
+
+# Configurações de monitoramento
+[monitoring]
+enabled = true
+healthCheckInterval = 30
+healthCheckTimeout = 10
+
+# Configurações de escalabilidade
+[scaling]
+enabled = false
+minInstances = 1
+maxInstances = 1
+
+# Configurações de rede
+[networking]
+tcpProxyApplicationPort = 8080
+httpProxyApplicationPort = 8080
