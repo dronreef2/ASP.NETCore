@@ -75,7 +75,7 @@ namespace TutorCopiloto.Services
                 }
 
                 analysisReport.Status = AnalysisStatus.Completed;
-                analysisReport.LastAnalyzedAt = DateTime.UtcNow;
+                analysisReport.AnalysisDate = DateTime.UtcNow;
 
                 _logger.LogInformation("Análise concluída para {Name}. Score: {Score}",
                     repository.Name, analysisReport.QualityScore);
@@ -236,7 +236,7 @@ namespace TutorCopiloto.Services
                                 metrics.Add(new CodeMetric
                                 {
                                     Language = language,
-                                    Files = result.NFiles,
+                                    Files = result.Files,
                                     Lines = result.Code + result.Comment + result.Blank,
                                     CodeLines = result.Code,
                                     CommentLines = result.Comment,

@@ -1,346 +1,115 @@
 @page "{id:int}"
 @model TutorCopiloto.Pages.RepositoryAnalysis.DetailsModel
 @{
-    ViewData["Title"] = $"Análise - {Model.Repository?.Name ?? "Repositório"}";
+    ViewData["Title"] = "Detalhes do Repositório";
 }
 
 <div class="container-fluid mt-4">
     <div class="row">
         <div class="col-12">
-            <!-- Cabeçalho do Repositório -->
-            <div class="card mb-4">
+            <div class="card">
                 <div class="card-header">
-                    <div class="d-flex align-items-center">
-                        @if (Model.Repository?.Owner?.AvatarUrl != null)
-                        {
-                            <img src="@Model.Repository.Owner.AvatarUrl" class="rounded-circle me-3" width="48" height="48" alt="Avatar">
-                        }
-                        <div>
-                            <h4 class="card-title mb-1">
-                                @Model.Repository?.Name
-                                <a href="@Model.Repository?.HtmlUrl" target="_blank" class="ms-2">
-                                    <i class="fas fa-external-link-alt"></i>
-                                </a>
-                            </h4>
-                            <p class="card-subtitle text-muted mb-0">por @Model.Repository?.Owner?.Login</p>
-                        </div>
-                    </div>
+                    <h4 class="card-title mb-0">Detalhes do Repositório</h4>
                 </div>
                 <div class="card-body">
-                    <p class="mb-3">@Model.Repository?.Description</p>
+                    @if (Model.Repository != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5>@Model.Repository.Name</h5>
+                                <p class="text-muted">@Model.Repository.Description</p>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <strong>Linguagem:</strong><br>
+                                        @Model.Repository.Language
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <strong>Stars:</strong><br>
+                                        @Model.Repository.Stars
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <strong>Forks:</strong><br>
+                                        @Model.Repository.Forks
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <strong>Issues:</strong><br>
+                                        @Model.Repository.OpenIssues
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="text-center">
-                                <h5 class="text-primary">@Model.Repository?.Stars?.ToString("N0")</h5>
-                                <small class="text-muted">Estrelas</small>
+                        @if (Model.LatestAnalysis != null)
+                        {
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h6>Última Análise</h6>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-sm-3">
+                                                    <strong>Data:</strong><br>
+                                                    @Model.LatestAnalysis.AnalysisDate.ToString("dd/MM/yyyy HH:mm")
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <strong>Score de Qualidade:</strong><br>
+                                                    @Model.LatestAnalysis.QualityScore.ToString("F2")
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <strong>Arquivos:</strong><br>
+                                                    @Model.LatestAnalysis.FilesCount
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <strong>Linhas de Código:</strong><br>
+                                                    @Model.LatestAnalysis.TotalLinesOfCode
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-center">
-                                <h5 class="text-success">@Model.Repository?.Forks?.ToString("N0")</h5>
-                                <small class="text-muted">Forks</small>
+                        }
+
+                        @if (Model.AnalysisHistory.Any())
+                        {
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h6>Histórico de Análises</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Data</th>
+                                                    <th>Score de Qualidade</th>
+                                                    <th>Arquivos</th>
+                                                    <th>Linhas</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var analysis in Model.AnalysisHistory)
+                                                {
+                                                    <tr>
+                                                        <td>@analysis.AnalysisDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                                        <td>@analysis.QualityScore.ToString("F2")</td>
+                                                        <td>@analysis.FilesCount</td>
+                                                        <td>@analysis.TotalLinesOfCode</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            Repositório não encontrado.
                         </div>
-                        <div class="col-md-3">
-                            <div class="text-center">
-                                <h5 class="text-warning">@Model.Repository?.OpenIssues?.ToString("N0")</h5>
-                                <small class="text-muted">Issues Abertas</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-center">
-                                <h5 class="text-info">@Model.Repository?.Language</h5>
-                                <small class="text-muted">Linguagem</small>
-                            </div>
-                        </div>
-                    </div>
+                    }
                 </div>
             </div>
-
-            @if (Model.LatestAnalysis != null)
-            {
-                <!-- Análise Mais Recente -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-chart-line me-2"></i>
-                            Análise Mais Recente
-                            <small class="text-muted ms-2">
-                                @Model.LatestAnalysis.AnalyzedAt.ToString("dd/MM/yyyy HH:mm")
-                            </small>
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <!-- Score Geral -->
-                        <div class="row mb-4">
-                            <div class="col-md-4">
-                                <div class="text-center">
-                                    <div class="display-4 text-primary">@Model.LatestAnalysis.QualityScore.ToString("F1")%</div>
-                                    <h6>Score de Qualidade</h6>
-                                    <div class="progress mt-2">
-                                        <div class="progress-bar bg-primary" role="progressbar"
-                                             style="width: @Model.LatestAnalysis.QualityScore%"
-                                             aria-valuenow="@Model.LatestAnalysis.QualityScore"
-                                             aria-valuemin="0" aria-valuemax="100">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-8">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <h6>Métricas de Código</h6>
-                                        <ul class="list-unstyled">
-                                            <li><strong>Arquivos:</strong> @Model.LatestAnalysis.CodeMetrics.TotalFiles</li>
-                                            <li><strong>Linhas:</strong> @Model.LatestAnalysis.CodeMetrics.TotalLines.ToString("N0")</li>
-                                            <li><strong>Código:</strong> @Model.LatestAnalysis.CodeMetrics.CodeLines.ToString("N0")</li>
-                                            <li><strong>Comentários:</strong> @Model.LatestAnalysis.CodeMetrics.CommentLines.ToString("N0")</li>
-                                        </ul>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h6>Status da Análise</h6>
-                                        <ul class="list-unstyled">
-                                            <li><strong>Status:</strong>
-                                                <span class="badge bg-@(Model.LatestAnalysis.Status == "Completed" ? "success" : "warning")">
-                                                    @Model.LatestAnalysis.Status
-                                                </span>
-                                            </li>
-                                            <li><strong>Duração:</strong> @Model.LatestAnalysis.Duration.ToString(@"mm\:ss")</li>
-                                            <li><strong>Analisador:</strong> @Model.LatestAnalysis.AnalyzerVersion</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Problemas Encontrados -->
-                        @if (Model.LatestAnalysis.LintianFindings.Any() || Model.LatestAnalysis.SecurityIssues.Any())
-                        {
-                            <div class="row">
-                                <div class="col-12">
-                                    <h6>Problemas Identificados</h6>
-
-                                    @if (Model.LatestAnalysis.LintianFindings.Any())
-                                    {
-                                        <div class="mb-3">
-                                            <h6 class="text-warning">
-                                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                                Problemas de Empacotamento (@Model.LatestAnalysis.LintianFindings.Count)
-                                            </h6>
-                                            <div class="table-responsive">
-                                                <table class="table table-sm">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Severidade</th>
-                                                            <th>Tipo</th>
-                                                            <th>Descrição</th>
-                                                            <th>Arquivo</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach (var finding in Model.LatestAnalysis.LintianFindings.Take(10))
-                                                        {
-                                                            <tr>
-                                                                <td>
-                                                                    <span class="badge bg-@GetSeverityClass(finding.Severity)">
-                                                                        @finding.Severity
-                                                                    </span>
-                                                                </td>
-                                                                <td>@finding.Type</td>
-                                                                <td>@finding.Description</td>
-                                                                <td><code>@finding.File</code></td>
-                                                            </tr>
-                                                        }
-                                                    </tbody>
-                                                </table>
-                                                @if (Model.LatestAnalysis.LintianFindings.Count > 10)
-                                                {
-                                                    <p class="text-muted">... e mais @(Model.LatestAnalysis.LintianFindings.Count - 10) problemas</p>
-                                                }
-                                            </div>
-                                        </div>
-                                    }
-
-                                    @if (Model.LatestAnalysis.SecurityIssues.Any())
-                                    {
-                                        <div class="mb-3">
-                                            <h6 class="text-danger">
-                                                <i class="fas fa-shield-alt me-2"></i>
-                                                Problemas de Segurança (@Model.LatestAnalysis.SecurityIssues.Count)
-                                            </h6>
-                                            <div class="table-responsive">
-                                                <table class="table table-sm">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Severidade</th>
-                                                            <th>Tipo</th>
-                                                            <th>Descrição</th>
-                                                            <th>Arquivo:Linha</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach (var issue in Model.LatestAnalysis.SecurityIssues.Take(10))
-                                                        {
-                                                            <tr>
-                                                                <td>
-                                                                    <span class="badge bg-@GetSeverityClass(issue.Severity)">
-                                                                        @issue.Severity
-                                                                    </span>
-                                                                </td>
-                                                                <td>@issue.Type</td>
-                                                                <td>@issue.Description</td>
-                                                                <td><code>@issue.File:@issue.Line</code></td>
-                                                            </tr>
-                                                        }
-                                                    </tbody>
-                                                </table>
-                                                @if (Model.LatestAnalysis.SecurityIssues.Count > 10)
-                                                {
-                                                    <p class="text-muted">... e mais @(Model.LatestAnalysis.SecurityIssues.Count - 10) problemas</p>
-                                                }
-                                            </div>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="alert alert-success">
-                                <i class="fas fa-check-circle me-2"></i>
-                                Nenhum problema crítico identificado nesta análise.
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
-            else
-            {
-                <!-- Sem Análise -->
-                <div class="card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                        <h5>Nenhuma análise encontrada</h5>
-                        <p class="text-muted">Este repositório ainda não foi analisado.</p>
-                        <button type="button" class="btn btn-primary" onclick="analyzeRepository()">
-                            <i class="fas fa-play me-2"></i>Iniciar Análise
-                        </button>
-                    </div>
-                </div>
-            }
-
-            <!-- Histórico de Análises -->
-            @if (Model.AnalysisHistory.Any())
-            {
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-history me-2"></i>
-                            Histórico de Análises (@Model.AnalysisHistory.Count)
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Data</th>
-                                        <th>Score</th>
-                                        <th>Status</th>
-                                        <th>Duração</th>
-                                        <th>Problemas</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var analysis in Model.AnalysisHistory)
-                                    {
-                                        <tr>
-                                            <td>@analysis.AnalyzedAt.ToString("dd/MM/yyyy HH:mm")</td>
-                                            <td>
-                                                <span class="badge bg-@GetScoreClass(analysis.QualityScore)">
-                                                    @analysis.QualityScore.ToString("F1")%
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-@(analysis.Status == "Completed" ? "success" : "warning")">
-                                                    @analysis.Status
-                                                </span>
-                                            </td>
-                                            <td>@analysis.Duration.ToString(@"mm\:ss")</td>
-                                            <td>
-                                                @if (analysis.LintianFindings.Any() || analysis.SecurityIssues.Any())
-                                                {
-                                                    <span class="badge bg-danger">
-                                                        @(analysis.LintianFindings.Count + analysis.SecurityIssues.Count)
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-success">0</span>
-                                                }
-                                            </td>
-                                            <td>
-                                                <button type="button" class="btn btn-sm btn-outline-primary"
-                                                        onclick="viewAnalysisDetails(@analysis.Id)">
-                                                    <i class="fas fa-eye"></i> Ver
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            }
         </div>
     </div>
 </div>
-
-@functions {
-    private string GetSeverityClass(string severity)
-    {
-        return severity?.ToLower() switch
-        {
-            "error" => "danger",
-            "warning" => "warning",
-            "info" => "info",
-            _ => "secondary"
-        };
-    }
-
-    private string GetScoreClass(double score)
-    {
-        if (score >= 80) return "success";
-        if (score >= 60) return "info";
-        if (score >= 40) return "warning";
-        return "danger";
-    }
-}
-
-@section Scripts {
-    <script>
-        function analyzeRepository() {
-            if (confirm('Deseja iniciar uma nova análise deste repositório?')) {
-                $.post('/api/repositoryanalysis/analyze', {
-                    repositoryUrl: '@Model.Repository?.HtmlUrl',
-                    forceReanalysis: true
-                })
-                .done(function() {
-                    alert('Análise iniciada com sucesso!');
-                    location.reload();
-                })
-                .fail(function(xhr) {
-                    alert('Erro ao iniciar análise: ' + xhr.responseJSON?.message);
-                });
-            }
-        }
-
-        function viewAnalysisDetails(analysisId) {
-            // Implementar visualização detalhada da análise específica
-            console.log('Ver análise:', analysisId);
-        }
-    </script>
-}

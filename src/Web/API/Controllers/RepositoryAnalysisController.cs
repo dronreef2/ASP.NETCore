@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using TutorCopiloto.Services;
 using TutorCopiloto.Services.Dto;
 
@@ -186,8 +187,8 @@ namespace TutorCopiloto.Controllers
         /// Busca repositórios no GitHub
         /// </summary>
         [HttpGet("search")]
-        [ProducesResponseType(typeof(GitHubSearchResponse), 200)]
-        public async Task<ActionResult<GitHubSearchResponse>> SearchRepositories(
+        [ProducesResponseType(typeof(TutorCopiloto.Services.Dto.GitHubSearchResponse), 200)]
+        public async Task<ActionResult<TutorCopiloto.Services.Dto.GitHubSearchResponse>> SearchRepositories(
             [FromQuery] string q,
             [FromQuery] string language = null,
             [FromQuery] string sort = "stars",

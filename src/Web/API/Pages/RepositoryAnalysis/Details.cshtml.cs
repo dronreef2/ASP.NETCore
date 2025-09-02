@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using TutorCopiloto.Services;
 using TutorCopiloto.Services.Dto;
+using TutorCopiloto.Domain.Entities;
 
 namespace TutorCopiloto.Pages.RepositoryAnalysis
 {

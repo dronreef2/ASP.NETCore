@@ -662,5 +662,98 @@ namespace TutorCopiloto.Services
                 _logger.LogWarning(ex, "Erro ao limpar diretório temporário: {Path}", path);
             }
         }
+
+        /// <summary>
+        /// Obtém um repositório por ID
+        /// </summary>
+        public async Task<Repository?> GetRepositoryByIdAsync(int repositoryId)
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+
+            return await dbContext.Repositories
+                .FirstOrDefaultAsync(r => r.Id == repositoryId);
+        }
+
+        /// <summary>
+        /// Obtém a última análise de um repositório
+        /// </summary>
+        public async Task<AnalysisReportDto?> GetLatestAnalysisAsync(int repositoryId)
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+
+            var analysis = await dbContext.AnalysisReports
+                .Where(ar => ar.RepositoryId == repositoryId)
+                .OrderByDescending(ar => ar.AnalysisDate)
+                .FirstOrDefaultAsync();
+
+            if (analysis == null)
+                return null;
+
+            return new AnalysisReportDto
+            {
+                Id = analysis.Id,
+                RepositoryId = analysis.RepositoryId,
+                AnalysisDate = analysis.AnalysisDate,
+                QualityScore = analysis.QualityScore,
+                LintianFindings = analysis.LintianFindings?.Select(f => new LintianFindingDto
+                {
+                    Severity = f.Severity,
+                    Tag = f.Tag,
+                    Description = f.Description,
+                    FilePath = f.FilePath,
+                    LineNumber = f.LineNumber
+                }).ToList() ?? new List<LintianFindingDto>(),
+                CodeMetrics = analysis.CodeMetrics?.Select(m => new CodeMetricDto
+                {
+                    Language = m.Language,
+                    Files = m.Files,
+                    Lines = m.Lines,
+                    CodeLines = m.CodeLines,
+                    CommentLines = m.CommentLines,
+                    BlankLines = m.BlankLines
+                }).ToList() ?? new List<CodeMetricDto>()
+            };
+        }
+
+        /// <summary>
+        /// Obtém o histórico de análises de um repositório
+        /// </summary>
+        public async Task<List<AnalysisReportDto>> GetAnalysisHistoryAsync(int repositoryId)
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+
+            var analyses = await dbContext.AnalysisReports
+                .Where(ar => ar.RepositoryId == repositoryId)
+                .OrderByDescending(ar => ar.AnalysisDate)
+                .ToListAsync();
+
+            return analyses.Select(analysis => new AnalysisReportDto
+            {
+                Id = analysis.Id,
+                RepositoryId = analysis.RepositoryId,
+                AnalysisDate = analysis.AnalysisDate,
+                QualityScore = analysis.QualityScore,
+                LintianFindings = analysis.LintianFindings?.Select(f => new LintianFindingDto
+                {
+                    Severity = f.Severity,
+                    Tag = f.Tag,
+                    Description = f.Description,
+                    FilePath = f.FilePath,
+                    LineNumber = f.LineNumber
+                }).ToList() ?? new List<LintianFindingDto>(),
+                CodeMetrics = analysis.CodeMetrics?.Select(m => new CodeMetricDto
+                {
+                    Language = m.Language,
+                    Files = m.Files,
+                    Lines = m.Lines,
+                    CodeLines = m.CodeLines,
+                    CommentLines = m.CommentLines,
+                    BlankLines = m.BlankLines
+                }).ToList() ?? new List<CodeMetricDto>()
+            }).ToList();
+        }
     }
 }
