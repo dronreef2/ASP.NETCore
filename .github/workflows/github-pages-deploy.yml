@@ -55,6 +55,7 @@ jobs:
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:;">
             <title>🎓 Tutor Copiloto - API Documentation</title>
             <style>
                 body {
@@ -62,16 +63,16 @@ jobs:
                     max-width: 800px;
                     margin: 0 auto;
                     padding: 20px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
+                    background: #f5f5f5;
+                    color: #333;
                     min-height: 100vh;
                 }
                 .container {
-                    background: rgba(255, 255, 255, 0.1);
+                    background: rgba(255, 255, 255, 0.95);
                     padding: 30px;
                     border-radius: 10px;
-                    backdrop-filter: blur(10px);
                     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
                 }
                 h1 {
                     text-align: center;
@@ -79,24 +80,27 @@ jobs:
                     font-size: 2.5em;
                 }
                 .status {
-                    background: rgba(0, 255, 0, 0.2);
-                    border: 1px solid rgba(0, 255, 0, 0.3);
+                    background: #e8f5e8;
+                    border: 1px solid #4caf50;
                     padding: 15px;
                     border-radius: 5px;
                     margin: 20px 0;
+                    color: #2e7d32;
                 }
                 .api-info {
-                    background: rgba(255, 255, 255, 0.1);
+                    background: #ffffff;
                     padding: 20px;
                     border-radius: 5px;
                     margin: 20px 0;
+                    border: 1px solid #e0e0e0;
                 }
                 .endpoint {
-                    background: rgba(0, 0, 0, 0.2);
+                    background: #f8f9fa;
                     padding: 10px;
                     margin: 10px 0;
                     border-radius: 3px;
                     font-family: monospace;
+                    border-left: 3px solid #007acc;
                 }
                 .github-link {
                     display: inline-block;
