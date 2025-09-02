@@ -1,0 +1,173 @@
+@page
+@model TutorCopiloto.Pages.RepositoryAnalysis.IndexModel
+@{
+    ViewData["Title"] = "Análise de Repositórios";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-code-branch"></i>
+                        Plataforma de Análise de Repositórios GitHub
+                    </h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-success btn-sm" onclick="collectRepositories()">
+                            <i class="fas fa-sync"></i> Coletar Repositórios
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#analyzeModal">
+                            <i class="fas fa-plus"></i> Analisar Repositório
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Estatísticas -->
+                    <div class="row mb-4" id="statsContainer">
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-info"><i class="fas fa-code-branch"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total de Repositórios</span>
+                                    <span class="info-box-number" id="totalRepos">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-success"><i class="fas fa-check-circle"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Analisados</span>
+                                    <span class="info-box-number" id="analyzedRepos">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-warning"><i class="fas fa-clock"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Pendentes</span>
+                                    <span class="info-box-number" id="pendingAnalyses">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-primary"><i class="fas fa-star"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Score Médio</span>
+                                    <span class="info-box-number" id="avgScore">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filtros -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <select class="form-control" id="languageFilter">
+                                <option value="">Todas as Linguagens</option>
+                                <option value="csharp">C#</option>
+                                <option value="python">Python</option>
+                                <option value="javascript">JavaScript</option>
+                                <option value="go">Go</option>
+                                <option value="rust">Rust</option>
+                                <option value="java">Java</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" class="form-control" id="minStarsFilter" placeholder="Min Stars">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" class="form-control" id="minScoreFilter" placeholder="Min Score">
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-control" id="sortByFilter">
+                                <option value="stars">Stars</option>
+                                <option value="quality">Qualidade</option>
+                                <option value="lastAnalyzed">Última Análise</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-outline-primary" onclick="applyFilters()">
+                                <i class="fas fa-filter"></i> Aplicar Filtros
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearFilters()">
+                                <i class="fas fa-times"></i> Limpar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabela de Repositórios -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="repositoriesTable">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Linguagem</th>
+                                    <th>Stars</th>
+                                    <th>Score</th>
+                                    <th>Status</th>
+                                    <th>Última Análise</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="repositoriesTableBody">
+                                <!-- Dados serão carregados via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginação -->
+                    <div class="d-flex justify-content-center" id="paginationContainer">
+                        <!-- Paginação será gerada dinamicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Análise de Repositório -->
+<div class="modal fade" id="analyzeModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Analisar Repositório</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="analyzeForm">
+                    <div class="form-group">
+                        <label for="repositoryUrl">URL do Repositório GitHub</label>
+                        <input type="url" class="form-control" id="repositoryUrl" required
+                               placeholder="https://github.com/owner/repository">
+                    </div>
+                    <div class="form-group">
+                        <label for="repositoryDescription">Descrição (opcional)</label>
+                        <textarea class="form-control" id="repositoryDescription" rows="2"
+                                  placeholder="Descrição do repositório"></textarea>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="forceReanalysis">
+                        <label class="form-check-label" for="forceReanalysis">
+                            Forçar reanálise (mesmo se já foi analisado recentemente)
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="analyzeRepository()">Analisar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/repository-analysis.js"></script>
+}

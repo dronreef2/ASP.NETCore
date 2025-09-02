@@ -1,5 +1,7 @@
 using Microsoft.SemanticKernel;
 using System.ComponentModel;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace TutorCopiloto.Services
 {
@@ -18,16 +20,16 @@ namespace TutorCopiloto.Services
     {
         private readonly ILogger<IntelligentAnalysisService> _logger;
         private readonly IConfiguration _configuration;
-        private readonly LlamaIndexService _llamaIndexService;
+        private readonly IAIService _aiService;
         private readonly Kernel _kernel;
 
         public IntelligentAnalysisService(
             IConfiguration configuration,
-            LlamaIndexService llamaIndexService,
+            IAIService aiService,
             ILogger<IntelligentAnalysisService> logger)
         {
             _configuration = configuration;
-            _llamaIndexService = llamaIndexService;
+            _aiService = aiService;
             _logger = logger;
 
             // Simplificar inicialização sem plugins por enquanto
@@ -61,7 +63,7 @@ Por favor, forneça:
 
 Responda em formato JSON estruturado.";
 
-                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, deploymentId);
+                var aiText = await _aiService.GetChatResponseAsync(prompt, deploymentId);
                 var aiResponse = new { Content = aiText };
 
                 // Tentar desserializar a resposta da IA para um DTO estruturado
@@ -131,7 +133,7 @@ Identifique:
 4. Recomendações de otimização
 5. Ferramentas sugeridas";
 
-                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, "performance-analysis");
+                var aiText = await _aiService.GetChatResponseAsync(prompt, "performance-analysis");
                 var aiResponse = new { Content = aiText };
 
                 return new PerformanceInsight
@@ -177,7 +179,7 @@ Inclua:
 
 Formato: Relatório técnico conciso";
 
-                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, deploymentId);
+                var aiText = await _aiService.GetChatResponseAsync(prompt, deploymentId);
                 return aiText ?? "Resumo não disponível";
             }
             catch (Exception ex)
@@ -203,7 +205,7 @@ Inclua:
 
 Formato: Resumo executivo profissional";
 
-                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, deploymentId);
+                var aiText = await _aiService.GetChatResponseAsync(prompt, deploymentId);
                 return aiText ?? "Resumo não disponível";
             }
             catch (Exception ex)
@@ -229,7 +231,7 @@ Identifique:
 4. Recomendações de correção
 5. Questões de compliance";
 
-                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, "security-analysis");
+                var aiText = await _aiService.GetChatResponseAsync(prompt, "security-analysis");
                 var aiResponse = new { Content = aiText };
 
                 return new SecurityAnalysisResult
@@ -273,7 +275,7 @@ Detecte:
 4. Comportamentos suspeitos
 5. Sugestões de otimização";
 
-                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, "anomaly-detection");
+                var aiText = await _aiService.GetChatResponseAsync(prompt, "anomaly-detection");
                 var aiResponse = new { Content = aiText };
 
                 return new AnomalyDetectionResult
@@ -316,7 +318,7 @@ Forneça recomendações específicas para:
 4. Segurança
 5. Performance";
 
-                var aiText = await _llamaIndexService.GetChatResponseAsync(prompt, "deployment-recommendations");
+                var aiText = await _aiService.GetChatResponseAsync(prompt, "deployment-recommendations");
                 var aiResponse = new { Content = aiText };
 
                 return new DeploymentRecommendations

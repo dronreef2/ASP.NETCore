@@ -92,7 +92,7 @@ namespace TutorCopiloto.Controllers
 
                 _logger.LogInformation("Deploy manual iniciado para: {Repository}", request.RepositoryUrl);
 
-                var deployment = await _deploymentService.CreateDeploymentAsync(new DeploymentRequest
+                var deployment = _deploymentService.CreateDeployment(new DeploymentRequest
                 {
                     RepositoryUrl = request.RepositoryUrl,
                     Branch = request.Branch ?? "main",

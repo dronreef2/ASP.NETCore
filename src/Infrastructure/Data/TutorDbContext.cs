@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TutorCopiloto.Models;
 using TutorCopiloto.Services;
+using TutorCopiloto.Domain.Entities;
 
 namespace TutorCopiloto.Data;
 
@@ -18,6 +19,10 @@ public class TutorDbContext : DbContext, IApplicationDbContext
     public DbSet<Sessao> Sessoes => Set<Sessao>();
     public DbSet<Interacao> Interacoes => Set<Interacao>();
     public DbSet<AvaliacaoCodigo> AvaliacoesCodigo => Set<AvaliacaoCodigo>();
+    
+    // Repository Analysis DbSets
+    public DbSet<Repository> Repositories => Set<Repository>();
+    public DbSet<AnalysisReport> AnalysisReports => Set<AnalysisReport>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

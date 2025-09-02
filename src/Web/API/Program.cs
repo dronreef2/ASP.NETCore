@@ -23,6 +23,21 @@ namespace TutorCopiloto
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // ===== CARREGAR VARIÁVEIS DE AMBIENTE =====
+            builder.Configuration
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .AddUserSecrets<Program>(optional: true);
+
+            // Carregar arquivo .env se existir
+            var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+            if (File.Exists(envPath))
+            {
+                builder.Configuration.AddEnvironmentVariables();
+                DotNetEnv.Env.Load(envPath);
+            }
+
             // ===== CONFIGURAÇÃO DE LOGGING =====
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
@@ -76,7 +91,11 @@ namespace TutorCopiloto
                 builder.Services.AddMemoryCache();
             }
 
-            // 3. LlamaIndex AI Service
+            // 3. AI Services Configuration
+            builder.Services.Configure<AIServiceOptions>(
+                builder.Configuration.GetSection("AI"));
+
+            // LlamaIndex Service
             builder.Services.Configure<LlamaIndexOptions>(
                 builder.Configuration.GetSection("AI:LlamaIndex"));
 
@@ -89,7 +108,77 @@ namespace TutorCopiloto
                 client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
             });
 
+            // OpenAI Service
+            builder.Services.Configure<OpenAIOptions>(
+                builder.Configuration.GetSection("AI:OpenAI"));
+
+            builder.Services.AddHttpClient<OpenAIService>((provider, client) =>
+            {
+                var options = provider.GetRequiredService<IOptions<OpenAIOptions>>().Value;
+                client.BaseAddress = new Uri(options.BaseUrl);
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", options.ApiKey);
+                client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+            });
+
+            // Anthropic Service
+            builder.Services.Configure<AnthropicOptions>(
+                builder.Configuration.GetSection("AI:Anthropic"));
+
+            builder.Services.AddHttpClient<AnthropicService>((provider, client) =>
+            {
+                var options = provider.GetRequiredService<IOptions<AnthropicOptions>>().Value;
+                client.BaseAddress = new Uri(options.BaseUrl);
+                client.DefaultRequestHeaders.Add("x-api-key", options.ApiKey);
+                client.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
+                client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+            });
+
+            // Register AI Services
             builder.Services.AddScoped<LlamaIndexService>();
+            builder.Services.AddScoped<OpenAIService>();
+            builder.Services.AddScoped<AnthropicService>();
+
+            // Register AI Service Orchestrator
+            builder.Services.AddScoped<AIServiceOrchestrator>();
+            builder.Services.AddScoped<IAIService, AIServiceOrchestrator>(provider =>
+                provider.GetRequiredService<AIServiceOrchestrator>());
+
+            // 4. Repository Analysis Services
+            builder.Services.Configure<RepositoryCollectionOptions>(
+                builder.Configuration.GetSection("RepositoryAnalysis:Collection"));
+
+            builder.Services.AddHttpClient<RepositoryCollectionService>((provider, client) =>
+            {
+                var options = provider.GetRequiredService<IOptions<RepositoryCollectionOptions>>().Value;
+                client.BaseAddress = new Uri(options.GitHubApiBaseUrl);
+                client.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json");
+                client.DefaultRequestHeaders.Add("User-Agent", "TutorCopiloto-RepositoryAnalyzer/1.0");
+
+                if (!string.IsNullOrEmpty(options.GitHubApiKey))
+                {
+                    client.DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", options.GitHubApiKey);
+                }
+            });
+
+            builder.Services.Configure<QualityAnalysisOptions>(
+                builder.Configuration.GetSection("RepositoryAnalysis:Quality"));
+
+            builder.Services.AddHttpClient<QualityAnalysisService>((provider, client) =>
+            {
+                var options = provider.GetRequiredService<IOptions<QualityAnalysisOptions>>().Value;
+                client.BaseAddress = new Uri(options.AnalysisServiceUrl);
+                client.Timeout = TimeSpan.FromSeconds(options.AnalysisTimeoutSeconds);
+            });
+
+            builder.Services.Configure<RepositoryAnalysisOrchestratorOptions>(
+                builder.Configuration.GetSection("RepositoryAnalysis:Orchestrator"));
+
+            // Register Repository Analysis Services
+            builder.Services.AddScoped<RepositoryCollectionService>();
+            builder.Services.AddScoped<QualityAnalysisService>();
+            builder.Services.AddScoped<RepositoryAnalysisOrchestrator>();
 
             // 4. Injeção de Dependência - Serviços customizados
             builder.Services.AddScoped<IRelatorioService, RelatorioService>();
@@ -293,6 +382,13 @@ namespace TutorCopiloto
 
             // ===== CONFIGURAÇÃO DA APLICAÇÃO =====
             var app = builder.Build();
+
+            // Inicializar banco de dados
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<TutorDbContext>();
+                dbContext.EnsureDatabaseCreatedAsync().Wait();
+            }
 
             // 1. Request Localization
             app.UseRequestLocalization();

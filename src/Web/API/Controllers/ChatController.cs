@@ -8,14 +8,14 @@ namespace TutorCopiloto.Controllers
     [Route("api/[controller]")]
     public class ChatController : ControllerBase
     {
-        private readonly LlamaIndexService _llamaIndexService;
+        private readonly IAIService _aiService;
         private readonly ILogger<ChatController> _logger;
 
         public ChatController(
-            LlamaIndexService llamaIndexService,
+            IAIService aiService,
             ILogger<ChatController> logger)
         {
-            _llamaIndexService = llamaIndexService;
+            _aiService = aiService;
             _logger = logger;
         }
 
@@ -31,8 +31,8 @@ namespace TutorCopiloto.Controllers
 
                 _logger.LogInformation("Processando mensagem de chat do usuário: {UserId}", request.UserId);
 
-                // Usar LlamaIndex para processar a mensagem
-                var response = await _llamaIndexService.GetChatResponseAsync(
+                // Usar serviço de IA para processar a mensagem
+                var response = await _aiService.GetChatResponseAsync(
                     request.Message,
                     request.UserId ?? "anonymous"
                 );
