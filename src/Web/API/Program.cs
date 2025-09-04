@@ -180,7 +180,13 @@ namespace TutorCopiloto
             builder.Services.AddScoped<QualityAnalysisService>();
             builder.Services.AddScoped<RepositoryAnalysisOrchestrator>();
 
-            // 4. Injeção de Dependência - Serviços customizados
+            // 5. Agent Task Services
+            builder.Services.AddScoped<TutorCopiloto.Services.AgentTasks.Agents.CodeReviewAgent>();
+            builder.Services.AddScoped<TutorCopiloto.Services.AgentTasks.Agents.SecurityAnalysisAgent>();
+            builder.Services.AddScoped<TutorCopiloto.Services.AgentTasks.Agents.DocumentationAgent>();
+            builder.Services.AddScoped<TutorCopiloto.Services.AgentTasks.AgentTaskOrchestrator>();
+
+            // 6. Injeção de Dependência - Serviços customizados
             builder.Services.AddScoped<IRelatorioService, RelatorioService>();
             builder.Services.AddScoped<IDeploymentService, DeploymentService>();
             builder.Services.AddScoped<IRepositoryAnalysisService, RepositoryAnalysisService>();

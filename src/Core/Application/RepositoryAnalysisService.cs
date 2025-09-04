@@ -264,6 +264,7 @@ namespace TutorCopiloto.Services
                 }
 
                 analysis.ProgrammingLanguages = languages.Values.ToList();
+                analysis.DetectedLanguages = languages.Keys.ToList();
                 
                 step.Status = "Completed";
                 step.Logs.Add($"Linguagens identificadas: {string.Join(", ", languages.Keys)}");
@@ -604,6 +605,7 @@ namespace TutorCopiloto.Services
         public Dictionary<string, int> FileExtensions { get; set; } = new();
         public List<string> DirectoryStructure { get; set; } = new();
         public List<LanguageInfo> ProgrammingLanguages { get; set; } = new();
+        public List<string> DetectedLanguages { get; set; } = new();
         public List<ConfigurationFile> ConfigurationFiles { get; set; } = new();
         public List<ImportantFile> ImportantFiles { get; set; } = new();
         public List<AnalysisStep> AnalysisSteps { get; set; } = new();
